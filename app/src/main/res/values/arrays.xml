@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="classify_list">
+        <item>@string/food</item>
+        <item>@string/transportation</item>
+        <item>@string/entertainment</item>
+        <item>@string/housing</item>
+        <item>@string/daily_necessities</item>
+        <item>@string/education</item>
+        <item>@string/medical</item>
+        <item>@string/pet</item>
+        <item>@string/others</item>
+    </string-array>
+    <array name="classify_icon_list">
+        <item>@drawable/lunch_dining</item>
+        <item>@drawable/train</item>
+        <item>@drawable/sports_esports</item>
+        <item>@drawable/home</item>
+        <item>@drawable/apparel</item>
+        <item>@drawable/school</item>
+        <item>@drawable/medication</item>
+        <item>@drawable/pets</item>
+        <item>@drawable/steppers</item>
+    </array>
+    <array name="classify_icon_list_thin">
+        <item>@drawable/lunch_dining_thin</item>
+        <item>@drawable/train_thin</item>
+        <item>@drawable/sports_esports_thin</item>
+        <item>@drawable/home_thin</item>
+        <item>@drawable/apparel_thin</item>
+        <item>@drawable/school_thin</item>
+        <item>@drawable/medication_thin</item>
+        <item>@drawable/pets_thin</item>
+        <item>@drawable/steppers_thin</item>
+    </array>
+    <string-array name="classify_list_id">
+        <item>food</item>
+        <item>transportation</item>
+        <item>entertainment</item>
+        <item>housing</item>
+        <item>daily_necessities</item>
+        <item>education</item>
+        <item>medical</item>
+        <item>pet</item>
+        <item>others</item>
+    </string-array>
+</resources>
