@@ -47,6 +47,7 @@ import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
@@ -225,7 +226,7 @@ class CreateBillingActivity : AppCompatActivity() {
                 .setTitleText(getString(R.string.select_date))
                 .setSelection(billingObject.time)
                 .build()
-
+            datePicker.isCancelable = false
             datePicker.show(supportFragmentManager, "DATE_PICKER")
             datePicker.addOnPositiveButtonClickListener { timestamp ->
                 depositBillingDate = TimeUtils.convertDateToDayLevelTimestamp(
@@ -486,7 +487,10 @@ class CreateBillingActivity : AppCompatActivity() {
 
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText(getString(R.string.select_date))
-            .setSelection(billingObject.time)
+            .setSelection(TimeUtils.convertTimestampToLocalDate(billingObject.time)
+                .atStartOfDay(ZoneId.of("UTC"))
+                .toInstant()
+                .toEpochMilli())
             .build()
 
         val timePicker = MaterialTimePicker.Builder()
