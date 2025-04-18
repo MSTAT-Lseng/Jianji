@@ -127,18 +127,6 @@ class HomeFragment : Fragment() {
     }
 
     private fun loadBillingItems() {
-        fun getCategoryPairs(): List<Pair<Int, String>> {
-            return resources.obtainTypedArray(R.array.classify_icon_list_thin).use { icons ->
-                val categories = resources.getStringArray(R.array.classify_list_id)
-                require(icons.length() == categories.size) {
-                    requireActivity().getString(R.string.inconsistent_array_lengths)
-                }
-
-                (0 until icons.length()).map { index ->
-                    icons.getResourceId(index, -1) to categories[index]
-                }
-            }
-        }
 
         fun addRecord(record: BillingDao.Record, allWallets: List<Pair<Int, String>>) {
             val billingItemView = LayoutInflater.from(requireContext())
@@ -147,7 +135,7 @@ class HomeFragment : Fragment() {
             billingItemView.apply {
                 // classify
                 val classifyImageView = findViewById<ImageView>(R.id.classify_image)
-                val categoryPairs = getCategoryPairs()
+                val categoryPairs = UIUtils().getCategoryPairs(resources, requireActivity())
                 val category = categoryPairs.find { it.second == record.classify }
                 classifyImageView.setImageResource(category?.first ?: R.drawable.account_balance_wallet_thin)
 

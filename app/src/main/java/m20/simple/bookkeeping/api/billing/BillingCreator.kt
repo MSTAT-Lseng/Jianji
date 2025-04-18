@@ -116,6 +116,14 @@ object BillingCreator {
         return records
     }
 
+    // 推荐异步使用此方法
+    fun getRecordById(recordId: Long, context: Context): BillingDao.Record? {
+        val billingDao = BillingDao(context)
+        val record = billingDao.getRecordById(recordId)
+        billingDao.close()
+        return record
+    }
+
     fun getCreateBillingFailedReason(reason: Int, resources: Resources): String {
         val billingFailureReasons = mapOf(
             CREATE_BILLING_TIME_CHECK_FAILED to R.string.create_billing_time_check_failed,
