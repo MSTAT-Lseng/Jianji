@@ -67,4 +67,11 @@
     <string name="cannot_swipe_to_ancient">Cannot switch to before 1970</string>
     <string name="calendar_billing_empty_title">No bills for today</string>
     <string name="calendar_billing_empty_desc">Click the lower right corner to make a note.</string>
+    <string name="expenditure">Expenditure</string>
+    <string name="income">Income</string>
+    <string name="realtime_pay">Real-time payments</string>
+    <string name="deposit_pay">Prepayment deposit</string>
+    <string name="deposit_consumption">Deposit effective</string>
+    <string name="bill_time">Billing time</string>
+    <string name="copy_to_clipboard">Content copied to clipboard</string>
 </resources>

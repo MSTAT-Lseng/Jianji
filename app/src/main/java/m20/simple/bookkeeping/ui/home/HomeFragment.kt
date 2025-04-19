@@ -136,21 +136,29 @@ class HomeFragment : Fragment() {
                 // classify
                 val classifyImageView = findViewById<ImageView>(R.id.classify_image)
                 val categoryPairs = UIUtils().getCategoryPairs(resources, requireActivity())
+                val categories = UIUtils().getCategories(resources)
                 val category = categoryPairs.find { it.second == record.classify }
                 classifyImageView.setImageResource(category?.first ?: R.drawable.account_balance_wallet_thin)
+                classifyImageView.contentDescription = categories
+                    .find { it.first == record.classify }?.second ?: getString(R.string.classify_icon)
 
                 // Amount
                 val amountTextView = findViewById<TextView>(R.id.amount_text)
-                val amount = record.amount.takeIf { it != 0 }
-                    ?.let { WalletCreator.convertAmountFormat(it.toString(),
-                        true, record.iotype) }
-                    ?: "0.00"
+                val zeroAmount = "0.00"
+                val (amount, amountAccessibility) = record.amount.takeIf { it != 0 }?.let { value ->
+                    val convertedTrue = WalletCreator.convertAmountFormat(value.toString(), true, record.iotype)
+                    val convertedFalse = WalletCreator.convertAmountFormat(value.toString(), false, record.iotype)
+                    convertedTrue to convertedFalse
+                } ?: (zeroAmount to zeroAmount)
                 val amountColor = resources.getColor(
                     if (record.iotype == 0) R.color.iotype_expenditure
                     else R.color.iotype_income
                 )
                 amountTextView.text = amount
                 amountTextView.setTextColor(amountColor)
+                amountTextView.contentDescription = if (record.iotype == 0)
+                    "${getString(R.string.expenditure)}$amountAccessibility"
+                    else "${getString(R.string.income)}$amountAccessibility"
 
                 // Note
                 val noteTextView = findViewById<TextView>(R.id.notes_text)

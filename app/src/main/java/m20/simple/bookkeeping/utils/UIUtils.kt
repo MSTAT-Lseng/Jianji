@@ -58,4 +58,21 @@ class UIUtils {
         }
     }
 
+    // 获得分类ID对应的字符串，详见 arrays.xml。
+    fun getCategories(resources: Resources): List<Pair<String, String>> {
+        val classifyNames = resources.getStringArray(R.array.classify_list)
+        val classifyIds = resources.getStringArray(R.array.classify_list_id)
+
+        return classifyIds.zip(classifyNames) { id, name ->
+            id to name
+        }
+    }
+
+    // 复制文本到剪贴板
+    fun copyTextToClipboard(context: Context, text: String) {
+        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        val clip = android.content.ClipData.newPlainText("Copied Text", text)
+        clipboard.setPrimaryClip(clip)
+    }
+
 }

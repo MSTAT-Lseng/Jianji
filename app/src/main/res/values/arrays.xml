@@ -36,13 +36,13 @@
     <array name="classify_icon_list_regular">
         <item>@drawable/lunch_dining_regular</item>
         <item>@drawable/train_regular</item>
-        <item>@drawable/sports_esports_thin</item>
-        <item>@drawable/home_thin</item>
-        <item>@drawable/apparel_thin</item>
-        <item>@drawable/school_thin</item>
-        <item>@drawable/medication_thin</item>
-        <item>@drawable/pets_thin</item>
-        <item>@drawable/steppers_thin</item>
+        <item>@drawable/sports_esports_regular</item>
+        <item>@drawable/home_regular</item>
+        <item>@drawable/apparel_regular</item>
+        <item>@drawable/school_regular</item>
+        <item>@drawable/medication_regular</item>
+        <item>@drawable/pets_regular</item>
+        <item>@drawable/steppers_regular</item>
     </array>
     <string-array name="classify_list_id">
         <item>food</item>
