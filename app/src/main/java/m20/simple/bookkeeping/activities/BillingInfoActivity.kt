@@ -1,5 +1,6 @@
 package m20.simple.bookkeeping.activities
 
+import android.content.res.Resources
 import android.os.Bundle
 import android.view.View
 import android.widget.ImageView
@@ -30,6 +31,8 @@ class BillingInfoActivity : AppCompatActivity() {
     private var billId : Long = defaultBillId
     private var billCoroutineScope : Job? = null
 
+    val Int.dp: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_billing_info)
@@ -47,13 +50,25 @@ class BillingInfoActivity : AppCompatActivity() {
     }
 
     private fun loadBillingInfo() {
-        fun getBillingItemView(iconDrawable: Int, title: String, content: String) : View {
+        fun getBillingItemView(iconDrawable: Int,
+                               title: String,
+                               content: String,
+                               verticalLayout: Boolean = false) : View {
             // load billing_info_item.xml
             val billingItemView = layoutInflater.inflate(R.layout.billing_info_item, null)
             val titleTextView = billingItemView.findViewById<TextView>(R.id.title)
             val contentTextView = billingItemView.findViewById<TextView>(R.id.content)
             val iconImageView = billingItemView.findViewById<ImageView>(R.id.icon)
             val container = billingItemView.findViewById<LinearLayout>(R.id.container)
+
+            // verticalLayout
+            if (verticalLayout) {
+                container.orientation = LinearLayout.VERTICAL
+                contentTextView.gravity = android.view.Gravity.START
+                contentTextView.setPadding(4.dp, 8.dp, 4.dp, 0)
+                contentTextView.setTextColor(resources.getColor(R.color.md_theme_onSurfaceVariant))
+            }
+
             titleTextView.text = title
             contentTextView.text = content
             iconImageView.setImageResource(iconDrawable)
@@ -114,6 +129,14 @@ class BillingInfoActivity : AppCompatActivity() {
                 else -> getString(R.string.realtime_pay)
             }
 
+            // Wallet
+            val walletName = withContext(Dispatchers.IO) {
+                WalletCreator.getWalletNameAndBalance(this@BillingInfoActivity, record?.wallet!!.toLong())!!.first
+            }
+            listContainer.addView(getBillingItemView(R.drawable.account_balance_wallet_300,
+                resources.getString(R.string.wallet),
+                walletName!!))
+
             // Time
             val sdf = SimpleDateFormat("yyyy/MM/dd\nHH:mm", Locale.getDefault())
             val date = Date(record!!.time)
@@ -122,6 +145,13 @@ class BillingInfoActivity : AppCompatActivity() {
                 resources.getString(R.string.bill_time),
                 sdf.format(date)))
 
+            // Notes
+            if (record.notes != null && record.notes != "") {
+                listContainer.addView(getBillingItemView(R.drawable.edit_note_300,
+                    resources.getString(R.string.notes),
+                    record.notes,
+                    true))
+            }
         }
     }
 

@@ -74,4 +74,6 @@
     <string name="deposit_consumption">Deposit effective</string>
     <string name="bill_time">Billing time</string>
     <string name="copy_to_clipboard">Content copied to clipboard</string>
+    <string name="wallet">Wallet</string>
+    <string name="notes">Notes</string>
 </resources>

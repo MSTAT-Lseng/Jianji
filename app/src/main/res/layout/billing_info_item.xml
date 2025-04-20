@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -17,18 +18,27 @@
         android:paddingLeft="14dp"
         android:paddingRight="14dp">
 
-        <ImageView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:id="@+id/icon"
-            android:importantForAccessibility="no"/>
+            android:orientation="horizontal"
+            tools:ignore="UseCompoundDrawables">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?attr/textAppearanceBody1"
-            android:id="@+id/title"
-            android:layout_marginStart="6dp"/>
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/icon"
+                android:importantForAccessibility="no"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?attr/textAppearanceBody1"
+                android:id="@+id/title"
+                android:layout_marginStart="6dp"
+                android:layout_marginEnd="6dp" />
+
+        </LinearLayout>
 
         <TextView
             android:layout_width="match_parent"

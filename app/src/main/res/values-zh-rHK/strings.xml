@@ -75,4 +75,6 @@
     <string name="deposit_consumption">訂金生效</string>
     <string name="bill_time">帳單時間</string>
     <string name="copy_to_clipboard">已複製內容到剪貼簿</string>
+    <string name="wallet">錢包</string>
+    <string name="notes">備註</string>
 </resources>
