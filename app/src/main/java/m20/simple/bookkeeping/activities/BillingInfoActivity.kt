@@ -1,14 +1,21 @@
 package m20.simple.bookkeeping.activities
 
 import android.content.res.Resources
+import android.net.Uri
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.carousel.CarouselLayoutManager
+import com.google.android.material.carousel.CarouselSnapHelper
+import com.google.android.material.carousel.HeroCarouselStrategy
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -17,6 +24,8 @@ import kotlinx.coroutines.withContext
 import m20.simple.bookkeeping.R
 import m20.simple.bookkeeping.api.billing.BillingCreator
 import m20.simple.bookkeeping.api.wallet.WalletCreator
+import m20.simple.bookkeeping.database.billing.BillingDao
+import m20.simple.bookkeeping.utils.FileUtils
 import m20.simple.bookkeeping.utils.TimeUtils
 import m20.simple.bookkeeping.utils.UIUtils
 import java.text.SimpleDateFormat
@@ -86,6 +95,30 @@ class BillingInfoActivity : AppCompatActivity() {
             return billingItemView
         }
 
+        fun configPictureCarousel(record: BillingDao.Record) {
+            if (record.images == null) {
+                findViewById<LinearLayout>(R.id.carousel_container).visibility = View.GONE
+                return
+            }
+
+            fun getData(): List<Uri> {
+                val imageUriList = record.images.split(",")
+                return imageUriList.mapNotNull { filename ->
+                    FileUtils(this@BillingInfoActivity)
+                        .getPhotosUriByName(filename.trim())
+                }
+            }
+
+            val carouselRecyclerView = findViewById<RecyclerView>(R.id.carousel_recycler_view)
+            // 设置CarouselLayoutManager为英雄策略
+            carouselRecyclerView.layoutManager = CarouselLayoutManager(HeroCarouselStrategy())
+            // 设置适配器
+            carouselRecyclerView.adapter = CarouselAdapter(getData())
+            // 使用CarouselSnapHelper来使滚动停靠到最近的项目
+            val snapHelper = CarouselSnapHelper()
+            snapHelper.attachToRecyclerView(carouselRecyclerView)
+        }
+
         val ioTypeText = findViewById<TextView>(R.id.iotype_text)
         val amountText = findViewById<TextView>(R.id.amount_text)
         val classifyImageView = findViewById<ImageView>(R.id.classify_image)
@@ -152,6 +185,9 @@ class BillingInfoActivity : AppCompatActivity() {
                     record.notes,
                     true))
             }
+
+            // Images
+            configPictureCarousel(record)
         }
     }
 
@@ -160,4 +196,24 @@ class BillingInfoActivity : AppCompatActivity() {
         billCoroutineScope?.cancel()
     }
 
+}
+
+// 假设这是一个简单的适配器实现
+class CarouselAdapter(private val data: List<Uri>) :
+    RecyclerView.Adapter<CarouselAdapter.MyViewHolder>() {
+    class MyViewHolder(view: View) : RecyclerView.ViewHolder(view)
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.carousel_item, parent, false)
+        return MyViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
+        // 绑定数据到holder
+        val imageView = holder.itemView.findViewById<ImageView>(R.id.carousel_image_view)
+        val uri = data[position]
+        imageView.setImageURI(uri)
+    }
+
+    override fun getItemCount() = data.size
 }

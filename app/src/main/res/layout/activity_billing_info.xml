@@ -103,6 +103,23 @@
                 android:id="@+id/list_container"
                 android:orientation="vertical"/>
 
+            <LinearLayout
+                android:id="@+id/carousel_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp">
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/carousel_recycler_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="196dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    app:layoutManager="com.google.android.material.carousel.CarouselLayoutManager"
+                    app:carousel_alignment="start"/>
+
+            </LinearLayout>
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

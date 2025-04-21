@@ -74,6 +74,16 @@ class FileUtils (private val context: Context) {
         }
     }
 
+    fun getPhotosUriByName(name: String): Uri? {
+        val photosDir = File(filesDir, photosDirName)
+        val file = File(photosDir, name)
+        return if (file.exists()) {
+            Uri.fromFile(file)
+        } else {
+            null
+        }
+    }
+
     fun deletePhotos(name: String): Boolean {
         val photosDir = File(filesDir, photosDirName)
         return File(photosDir, name).takeIf { it.exists() }?.delete() ?: false

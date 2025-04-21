@@ -76,4 +76,5 @@
     <string name="copy_to_clipboard">Content copied to clipboard</string>
     <string name="wallet">Wallet</string>
     <string name="notes">Notes</string>
+    <string name="add_picture_notes">Added photo description</string>
 </resources>
