@@ -1,5 +1,6 @@
 package m20.simple.bookkeeping.activities
 
+import android.content.Intent
 import android.content.res.Resources
 import android.net.Uri
 import android.os.Bundle
@@ -26,7 +27,6 @@ import m20.simple.bookkeeping.api.billing.BillingCreator
 import m20.simple.bookkeeping.api.wallet.WalletCreator
 import m20.simple.bookkeeping.database.billing.BillingDao
 import m20.simple.bookkeeping.utils.FileUtils
-import m20.simple.bookkeeping.utils.TimeUtils
 import m20.simple.bookkeeping.utils.UIUtils
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -113,7 +113,7 @@ class BillingInfoActivity : AppCompatActivity() {
             // 设置CarouselLayoutManager为英雄策略
             carouselRecyclerView.layoutManager = CarouselLayoutManager(HeroCarouselStrategy())
             // 设置适配器
-            carouselRecyclerView.adapter = CarouselAdapter(getData())
+            carouselRecyclerView.adapter = CarouselAdapter(getData(), this, record)
             // 使用CarouselSnapHelper来使滚动停靠到最近的项目
             val snapHelper = CarouselSnapHelper()
             snapHelper.attachToRecyclerView(carouselRecyclerView)
@@ -199,21 +199,37 @@ class BillingInfoActivity : AppCompatActivity() {
 }
 
 // 假设这是一个简单的适配器实现
-class CarouselAdapter(private val data: List<Uri>) :
-    RecyclerView.Adapter<CarouselAdapter.MyViewHolder>() {
-    class MyViewHolder(view: View) : RecyclerView.ViewHolder(view)
+class CarouselAdapter(
+    private val data: List<Uri>,
+    private val activity: AppCompatActivity,
+    private val record: BillingDao.Record
+) : RecyclerView.Adapter<CarouselAdapter.MyViewHolder>() {
+
+    // ViewHolder类，用于缓存视图
+    class MyViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val imageView: ImageView = view.findViewById(R.id.carousel_image_view)
+    }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.carousel_item, parent, false)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.carousel_item, parent, false)
         return MyViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: MyViewHolder, position: Int) {
-        // 绑定数据到holder
-        val imageView = holder.itemView.findViewById<ImageView>(R.id.carousel_image_view)
         val uri = data[position]
-        imageView.setImageURI(uri)
+        holder.imageView.setImageURI(uri)
+
+        // 设置点击事件
+        holder.imageView.setOnClickListener {
+            val intent = Intent(activity, PictureViewerActivity::class.java).apply {
+                putExtra("provideType", "photos-storage")
+                putExtra("images", record.images)
+                putExtra("defaultItem", position)
+            }
+            activity.startActivity(intent)
+        }
     }
 
-    override fun getItemCount() = data.size
+    override fun getItemCount(): Int = data.size
 }

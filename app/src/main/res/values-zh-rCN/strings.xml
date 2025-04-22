@@ -78,4 +78,6 @@
     <string name="wallet">钱包</string>
     <string name="notes">备注</string>
     <string name="add_picture_notes">添加的照片描述</string>
+    <string name="picture_view_number">%s 张图片</string>
+    <string name="finish_activity">返回上一页</string>
 </resources>

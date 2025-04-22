@@ -63,4 +63,8 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
 
+    implementation("io.github.panpf.zoomimage:zoomimage-view-sketch4:1.1.2")
+
+    implementation("androidx.viewpager2:viewpager2:1.0.0")
+
 }

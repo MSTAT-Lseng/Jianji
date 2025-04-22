@@ -77,4 +77,6 @@
     <string name="wallet">Wallet</string>
     <string name="notes">Notes</string>
     <string name="add_picture_notes">Added photo description</string>
+    <string name="picture_view_number">%s images</string>
+    <string name="finish_activity">Return to previous page</string>
 </resources>
