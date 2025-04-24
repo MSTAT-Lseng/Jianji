@@ -37,6 +37,7 @@ import m20.simple.bookkeeping.api.billing.BillingCreator
 import m20.simple.bookkeeping.api.objects.BillingObject
 import m20.simple.bookkeeping.api.wallet.WalletCreator
 import m20.simple.bookkeeping.config.HintConfig
+import m20.simple.bookkeeping.database.billing.BillingDao
 import m20.simple.bookkeeping.utils.FileUtils
 import m20.simple.bookkeeping.utils.PremissionUtils
 import m20.simple.bookkeeping.utils.TimeUtils
@@ -57,6 +58,9 @@ import java.util.concurrent.Executors
 class CreateBillingActivity : AppCompatActivity() {
 
     private var isEditBilling: Boolean? = null
+    private var isEditBillingId: Int? = null
+    private var editBillingRecord: BillingDao.Record? = null
+
     private val billingObject = BillingObject(
         time = TimeUtils.getMinuteLevelTimestamp(),
         amount = 0,
@@ -76,7 +80,8 @@ class CreateBillingActivity : AppCompatActivity() {
     private var selectedPhotoNameList = mutableListOf<String>()
     private var photoUri: Uri? = null
 
-    private var createBillingCoroutineScope : Job? = null
+    private var createBillingCoroutineScope: Job? = null
+    private var loadEditBillingCoroutineScope: Job? = null
 
     companion object {
         val createBillingReturnedKey = "createdBilling"
@@ -92,19 +97,55 @@ class CreateBillingActivity : AppCompatActivity() {
         uiUtils.setStatusBarTextColor(this, !uiUtils.isDarkMode(resources))
 
         isEditBilling = intent.getBooleanExtra("isEditBilling", false)
-        configToolbar()
-        configAmountEditText()
+        isEditBillingId = intent.getIntExtra("billingId", -1)
 
-        configDatePicker()
-        configWalletSelector()
-        configPhotoSelector()
-        configNoteEditText()
-        configClassifyPicker()
-        configDepositCheckBox()
-        configIncomeCheckBox()
+        fun initBillingObject() {
+            if (!isEditBilling!!) return
 
-        configSubmitButton()
+            editBillingRecord?.let { record ->
+                billingObject.apply {
+                    time = record.time
+                    amount = record.amount
+                    iotype = record.iotype
+                    classify = record.classify
+                    notes = record.notes
+                    images = record.images
+                    deposit = record.deposit
+                    wallet = record.wallet
+                    tags = record.tags
+                }
+            }
+        }
 
+        fun initComponent() {
+            configToolbar()
+            configAmountEditText()
+
+            configDatePicker()
+            configWalletSelector()
+            configPhotoSelector()
+            configNoteEditText()
+            configClassifyPicker()
+            configDepositCheckBox()
+            configIncomeCheckBox()
+
+            configSubmitButton()
+        }
+
+        loadEditBillingCoroutineScope = CoroutineScope(Dispatchers.Main).launch {
+            editBillingRecord = if (isEditBilling == true) {
+                withContext(Dispatchers.IO) {
+                    BillingCreator.getRecordById(
+                        isEditBillingId!!.toLong(),
+                        this@CreateBillingActivity
+                    )
+                }
+            } else {
+                null
+            }
+            initBillingObject()
+            initComponent()
+        }
     }
 
     private fun configToolbar() {
@@ -133,7 +174,11 @@ class CreateBillingActivity : AppCompatActivity() {
                     billingObject.images = billingObject.images?.plus(",$fileName") ?: fileName
                     selectedPhotoNameList.add(fileName)
                 } else {
-                    Toast.makeText(this, getString(R.string.store_photos_failed), Toast.LENGTH_SHORT)
+                    Toast.makeText(
+                        this,
+                        getString(R.string.store_photos_failed),
+                        Toast.LENGTH_SHORT
+                    )
                         .show()
                 }
             }
@@ -166,10 +211,12 @@ class CreateBillingActivity : AppCompatActivity() {
                             BillingCreator.getCreateBillingFailedReason(status, resources) +
                                     BillingCreator.getCreateBillingFailedReason(code, resources)
                         }
+
                         BillingCreator.CREATE_BILLING_INSERT_FAILED,
                         BillingCreator.CREATE_BILLING_DEPOSIT_INSERT_FAILED -> {
                             BillingCreator.getCreateBillingFailedReason(status, resources) + code
                         }
+
                         else -> ""
                     }
 
@@ -193,6 +240,9 @@ class CreateBillingActivity : AppCompatActivity() {
 
     private fun configAmountEditText() {
         val editText = findViewById<TextInputEditText>(R.id.et_input_text)
+        editText.setText(if (isEditBilling == true) WalletCreator.convertAmountFormat(billingObject.amount.toString(),
+            false) else "")
+
         editText.requestFocus()
 
         fun taskAmount(amount: String) {
@@ -213,6 +263,10 @@ class CreateBillingActivity : AppCompatActivity() {
 
     private fun configIncomeCheckBox() {
         val income = findViewById<CheckBox>(R.id.cb_income)
+        if (isEditBilling == true) {
+            income.isChecked = (billingObject.iotype == 1)
+        }
+
         income.setOnCheckedChangeListener { _, isChecked ->
             billingObject.iotype = if (isChecked) 1 else 0
         }
@@ -220,6 +274,10 @@ class CreateBillingActivity : AppCompatActivity() {
 
     private fun configDepositCheckBox() {
         val depositCheckBox = findViewById<CheckBox>(R.id.cb_deposit)
+
+        if (isEditBilling == true) {
+            depositCheckBox.isEnabled = false
+        }
 
         fun setDepositDate() {
             val datePicker = MaterialDatePicker.Builder.datePicker()
@@ -240,8 +298,10 @@ class CreateBillingActivity : AppCompatActivity() {
 
                 Toast.makeText(
                     this,
-                    resources.getString(R.string.deposit_date,
-                        dateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))),
+                    resources.getString(
+                        R.string.deposit_date,
+                        dateTime.format(DateTimeFormatter.ofPattern("yyyy/MM/dd"))
+                    ),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -257,7 +317,8 @@ class CreateBillingActivity : AppCompatActivity() {
                 .setCancelable(false)
                 .setNeutralButton(resources.getString(R.string.deposit_never_show)) { dialog, which ->
                     HintConfig.setBooleanValue(
-                        this,HintConfig.KEY_DEPOSIT_BILL_HINT, false)
+                        this, HintConfig.KEY_DEPOSIT_BILL_HINT, false
+                    )
                     setDepositDate()
                 }
                 .setPositiveButton(resources.getString(R.string.deposit_ok)) { dialog, which ->
@@ -269,7 +330,9 @@ class CreateBillingActivity : AppCompatActivity() {
         depositCheckBox.setOnCheckedChangeListener { _, isChecked ->
             billingObject.deposit = if (isChecked) "true" else "false"
             if (isChecked && HintConfig.getBooleanValue(
-                this, HintConfig.KEY_DEPOSIT_BILL_HINT, true)) {
+                    this, HintConfig.KEY_DEPOSIT_BILL_HINT, true
+                )
+            ) {
                 showHintDialog()
             } else if (isChecked) {
                 setDepositDate()
@@ -280,7 +343,9 @@ class CreateBillingActivity : AppCompatActivity() {
     }
 
     private fun configNoteEditText() {
-        findViewById<TextInputEditText>(R.id.notes_input_text).doAfterTextChanged { editable ->
+        val editText = findViewById<TextInputEditText>(R.id.notes_input_text)
+        editText.setText(if (isEditBilling == true) billingObject.notes else "")
+        editText.doAfterTextChanged { editable ->
             billingObject.notes = editable.toString().takeIf { it.isNotEmpty() }
         }
     }
@@ -345,6 +410,11 @@ class CreateBillingActivity : AppCompatActivity() {
                 }
             }
             container.addView(classifyButton)
+        }
+        if (isEditBilling == true) {
+            val classifyId = billingObject.classify
+            val index = ids.indexOf(classifyId)
+            container.check(container.getChildAt(index).id)
         }
 
     }
@@ -487,10 +557,12 @@ class CreateBillingActivity : AppCompatActivity() {
 
         val datePicker = MaterialDatePicker.Builder.datePicker()
             .setTitleText(getString(R.string.select_date))
-            .setSelection(TimeUtils.convertTimestampToLocalDate(billingObject.time)
-                .atStartOfDay(ZoneId.of("UTC"))
-                .toInstant()
-                .toEpochMilli())
+            .setSelection(
+                TimeUtils.convertTimestampToLocalDate(billingObject.time)
+                    .atStartOfDay(ZoneId.of("UTC"))
+                    .toInstant()
+                    .toEpochMilli()
+            )
             .build()
 
         val timePicker = MaterialTimePicker.Builder()
@@ -530,6 +602,8 @@ class CreateBillingActivity : AppCompatActivity() {
         walletExecutorService.shutdown()
         createBillingCoroutineScope?.cancel()
         createBillingCoroutineScope = null
+        loadEditBillingCoroutineScope?.cancel()
+        loadEditBillingCoroutineScope = null
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

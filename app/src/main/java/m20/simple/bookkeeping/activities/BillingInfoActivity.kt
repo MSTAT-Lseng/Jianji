@@ -5,6 +5,8 @@ import android.content.res.Resources
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -14,6 +16,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.carousel.CarouselLayoutManager
 import com.google.android.material.carousel.CarouselSnapHelper
 import com.google.android.material.carousel.HeroCarouselStrategy
@@ -33,12 +36,12 @@ import java.util.Date
 import java.util.Locale
 
 
-
 class BillingInfoActivity : AppCompatActivity() {
 
     private var defaultBillId = -1L
     private var billId : Long = defaultBillId
     private var billCoroutineScope : Job? = null
+    private var topBar : MaterialToolbar? = null
 
     val Int.dp: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
 
@@ -47,11 +50,20 @@ class BillingInfoActivity : AppCompatActivity() {
         setContentView(R.layout.activity_billing_info)
 
         UIUtils().setStatusBarTextColor(this, !UIUtils().isDarkMode(resources))
+        configToolbar()
         billId = intent.getLongExtra("billingId", defaultBillId)
         if (checkBillingID()) {
             loadBillingInfo()
         }
 
+    }
+
+    private fun configToolbar() {
+        topBar = findViewById(R.id.topAppBar)
+        setSupportActionBar(topBar)
+        topBar?.setNavigationOnClickListener { v ->
+            onBackPressed()
+        }
     }
 
     private fun checkBillingID(): Boolean {
@@ -161,6 +173,11 @@ class BillingInfoActivity : AppCompatActivity() {
                 "consumption" -> getString(R.string.deposit_consumption)
                 else -> getString(R.string.realtime_pay)
             }
+            if (record?.deposit != "false") {
+                val menu = topBar?.menu
+                val profileItem = menu?.findItem(R.id.edit)
+                profileItem?.isVisible = false
+            }
 
             // Wallet
             val walletName = withContext(Dispatchers.IO) {
@@ -194,6 +211,32 @@ class BillingInfoActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         billCoroutineScope?.cancel()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.billing_info_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        fun editBilling() {
+            val intent = Intent(this, CreateBillingActivity::class.java)
+            intent.putExtra("isEditBilling", true)
+            intent.putExtra("billingId", billId.toInt())
+            startActivity(intent)
+        }
+
+        return when (item.itemId) {
+            R.id.edit -> {
+                editBilling()
+                true
+            }
+            R.id.delete -> {
+                //UIUtils().showDeleteDialog(this, billId, this)
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
 }

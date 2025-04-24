@@ -26,7 +26,6 @@
                 android:layout_height="?attr/actionBarSize"
                 android:elevation="0dp"
                 app:layout_collapseMode="pin"
-                app:menu="@menu/billing_info_menu"
                 app:navigationIcon="@drawable/arrow_back" />
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
