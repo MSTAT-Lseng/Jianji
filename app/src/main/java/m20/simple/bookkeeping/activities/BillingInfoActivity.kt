@@ -13,6 +13,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
@@ -42,6 +43,20 @@ class BillingInfoActivity : AppCompatActivity() {
     private var billId : Long = defaultBillId
     private var billCoroutineScope : Job? = null
     private var topBar : MaterialToolbar? = null
+    private var modified : Boolean = false
+
+    companion object {
+        val modifiedBillKeys = "isModified"
+    }
+
+    private val launcher = registerForActivityResult(StartActivityForResult()) { result ->
+        if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
+        startActivity(Intent(
+            this, BillingInfoActivity::class.java
+        ).putExtra("billingId", billId).putExtra("modified", true))
+        modified = true; setModified()
+        finish()
+    }
 
     val Int.dp: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
 
@@ -52,10 +67,19 @@ class BillingInfoActivity : AppCompatActivity() {
         UIUtils().setStatusBarTextColor(this, !UIUtils().isDarkMode(resources))
         configToolbar()
         billId = intent.getLongExtra("billingId", defaultBillId)
+        modified = intent.getBooleanExtra("modified", modified)
         if (checkBillingID()) {
             loadBillingInfo()
+            setModified()
         }
 
+    }
+
+    private fun setModified() {
+        if (!modified) return
+        val resultIntent = Intent()
+        resultIntent.putExtra(modifiedBillKeys, true)
+        setResult(RESULT_OK, resultIntent)
     }
 
     private fun configToolbar() {
@@ -223,7 +247,7 @@ class BillingInfoActivity : AppCompatActivity() {
             val intent = Intent(this, CreateBillingActivity::class.java)
             intent.putExtra("isEditBilling", true)
             intent.putExtra("billingId", billId.toInt())
-            startActivity(intent)
+            launcher.launch(intent)
         }
 
         return when (item.itemId) {

@@ -62,6 +62,12 @@ class HomeFragment : Fragment() {
 
     private var selectedDateView : TextView? = null
 
+    private val modifiedBillingListenLauncher = registerForActivityResult(StartActivityForResult()) { result ->
+        if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
+        configCalendar()
+        loadBillingItems()
+    }
+
     val Int.dp: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
 
     override fun onCreateView(
@@ -181,8 +187,9 @@ class HomeFragment : Fragment() {
                     localTime.format(DateTimeFormatter.ofPattern("HH:mm"))
 
                 setOnClickListener {
-                    startActivity(Intent(requireActivity(), BillingInfoActivity::class.java)
-                        .putExtra("billingId", record.id))
+                    val intent = Intent(requireActivity(), BillingInfoActivity::class.java)
+                    intent.putExtra("billingId", record.id)
+                    modifiedBillingListenLauncher.launch(intent)
                 }
 
             }

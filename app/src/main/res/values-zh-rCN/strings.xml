@@ -80,4 +80,5 @@
     <string name="add_picture_notes">添加的照片描述</string>
     <string name="picture_view_number">%s 张图片</string>
     <string name="finish_activity">返回上一页</string>
+    <string name="updated_billing_items">更新了 %d 个账单项目</string>
 </resources>

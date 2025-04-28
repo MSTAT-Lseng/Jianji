@@ -4,7 +4,10 @@ import android.content.Context
 import android.content.res.Resources
 import m20.simple.bookkeeping.R
 import m20.simple.bookkeeping.api.objects.BillingObject
+import m20.simple.bookkeeping.api.wallet.WalletCreator
 import m20.simple.bookkeeping.database.billing.BillingDao
+import m20.simple.bookkeeping.database.wallet.WalletDao
+import m20.simple.bookkeeping.utils.FileUtils
 import m20.simple.bookkeeping.utils.TimeUtils
 
 object BillingCreator {
@@ -21,8 +24,10 @@ object BillingCreator {
     const val CREATE_BILLING_CLASSIFY_CHECK_FAILED = -104
     const val CREATE_BILLING_DEPOSIT_TAG_CHECK_FAILED = -105
     const val CREATE_BILLING_WALLET_CHECK_FAILED = -106
+    const val EDIT_BILLING_ID_CHECK_FAILED = -107
 
-    private fun createBillingCheck(billingObject: BillingObject, depositBillingDate: Long): Int {
+    private fun createBillingCheck(billingObject: BillingObject,
+                                   depositBillingDate: Long = 0L): Int {
         with(billingObject) {
             // 1. 账单时间检查：账单时间必须在当前日或之前
             val billingTime = TimeUtils.convertDateToDayLevelTimestamp(TimeUtils.getDateFromTimestamp(time))
@@ -104,8 +109,80 @@ object BillingCreator {
             }
         }
 
+        // modify wallet amount.
+        WalletCreator.modifyWalletAmount(
+            context,
+            billingObject.wallet,
+            if (billingObject.iotype == 0) -billingObject.amount else billingObject.amount
+        )
 
         return Pair(CREATE_BILLING_SUCCESS, billingID.toInt())
+    }
+
+    // 推荐异步使用此方法
+    fun modifyBilling(billingId: Int,
+                      billingObject: BillingObject,
+                      context: Context): Pair<Int, Int> {
+        val billingDao = BillingDao(context)
+
+        // 检查ID是否存在
+        if (!billingDao.isRecordExists(billingId.toLong())) {
+            billingDao.close()
+            return Pair(CREATE_BILLING_CHECK_FAILED, EDIT_BILLING_ID_CHECK_FAILED)
+        }
+
+        val originalBillingDao = billingDao.getRecordById(billingId.toLong())
+
+        // 检查修改的object是否合规
+        val checkBilling = createBillingCheck(billingObject)
+        if (checkBilling != CREATE_BILLING_CHECK_SUCCESS) {
+            return Pair(CREATE_BILLING_CHECK_FAILED, checkBilling)
+        }
+
+        // 修改账单
+        val modifiedItemNumber = billingDao.updateRecord(
+            recordId = billingId.toLong(),
+            time = billingObject.time,
+            amount = billingObject.amount,
+            iotype = billingObject.iotype,
+            classify = billingObject.classify,
+            notes = billingObject.notes,
+            images = billingObject.images,
+            deposit = billingObject.deposit,
+            wallet = billingObject.wallet,
+            tags = billingObject.tags
+        )
+
+        // 修改钱包内的余额
+        val walletCreator = WalletCreator
+        fun getDelta(iotype: Int, amount: Int) = if (iotype == 0) amount else -amount
+        walletCreator.modifyWalletAmount(
+            context,
+            originalBillingDao!!.wallet,
+            getDelta(originalBillingDao.iotype, billingObject.amount)
+        )
+        walletCreator.modifyWalletAmount(
+            context,
+            billingObject.wallet,
+            -getDelta(billingObject.iotype, billingObject.amount)
+        )
+
+        // 检查图片备注是否有变化
+        fun compareImageNotesChanged() : Boolean {
+            val originalImage = originalBillingDao.images
+            val newImage = billingObject.images
+            return originalImage != newImage
+        }
+
+        if (!compareImageNotesChanged()) return Pair(CREATE_BILLING_SUCCESS, billingId)
+
+        originalBillingDao.images?.let { originalImages ->
+            originalImages.split(",").forEach { image ->
+                FileUtils(context).deletePhotos(image)
+            }
+        }
+
+        return Pair(CREATE_BILLING_SUCCESS, billingId)
     }
 
     // 推荐异步使用此方法

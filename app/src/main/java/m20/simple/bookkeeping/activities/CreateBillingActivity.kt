@@ -158,14 +158,6 @@ class CreateBillingActivity : AppCompatActivity() {
 
     private fun configSubmitButton() {
 
-        fun modifyWalletBalance(billingObject: BillingObject) {
-            WalletCreator.modifyWalletAmount(
-                this,
-                billingObject.wallet,
-                if (billingObject.iotype == 0) -billingObject.amount else billingObject.amount
-            )
-        }
-
         fun taskSubmit() {
             // 处理选取的图片
             for (uri in selectedPhotosList) {
@@ -186,18 +178,16 @@ class CreateBillingActivity : AppCompatActivity() {
             createBillingCoroutineScope = CoroutineScope(Dispatchers.Main).launch {
                 // 添加记录（切换到 IO 线程）
                 val billingCreator = withContext(Dispatchers.IO) {
-                    BillingCreator.createBilling(
-                        billingObject,
-                        depositBillingDate,
-                        this@CreateBillingActivity
-                    )
+                    val activityContext = this@CreateBillingActivity
+                    if (isEditBilling == true && isEditBillingId != null) {
+                        BillingCreator.modifyBilling(isEditBillingId!!, billingObject, activityContext)
+                    } else {
+                        BillingCreator.createBilling(billingObject, depositBillingDate, activityContext)
+                    }
                 }
 
                 val (status, code) = billingCreator
                 if (status == BillingCreator.CREATE_BILLING_SUCCESS) {
-                    withContext(Dispatchers.IO) {
-                        modifyWalletBalance(billingObject)
-                    }
                     val resultIntent = Intent()
                     resultIntent.putExtra(createBillingReturnedKey, code)
                     setResult(RESULT_OK, resultIntent)
@@ -451,6 +441,7 @@ class CreateBillingActivity : AppCompatActivity() {
         fun clearSelectedImages() {
             selectedPhotosNumber = 0
             selectedPhotosList.clear()
+            billingObject.images = null
             changeSelectedPhotosBtnText(0)
         }
 
@@ -474,6 +465,12 @@ class CreateBillingActivity : AppCompatActivity() {
                 handlePhotoSelection()
                 true
             }
+        }
+
+        if (isEditBilling == true && billingObject.images != null) {
+            val storageImages = billingObject.images!!.split(",")
+            selectedPhotosNumber = storageImages.size
+            changeSelectedPhotosBtnText(selectedPhotosNumber)
         }
     }
 
@@ -507,6 +504,15 @@ class CreateBillingActivity : AppCompatActivity() {
     private fun configWalletSelector() {
         val walletInputText: MaterialAutoCompleteTextView = findViewById(R.id.wallet_input_text)
 
+        fun checkEdit(allWallets: List<Pair<Int, String>>) {
+            if (!isEditBilling!!) {
+                return
+            }
+            allWallets.find { it.first == billingObject.wallet }?.let {
+                walletInputText.setText(it.second)
+            }
+        }
+
         fun updateUi(allWallets: List<Pair<Int, String>>, defaultWalletID: Int) {
             val wallets = allWallets.map { it.second }.toTypedArray()
             val defaultWallet = allWallets.find { it.first == defaultWalletID }
@@ -515,6 +521,8 @@ class CreateBillingActivity : AppCompatActivity() {
             billingObject.wallet = defaultWallet.first
             walletInputText.setSimpleItems(wallets)
             walletInputText.setText(defaultWallet.second)
+
+            checkEdit(allWallets)
         }
 
         walletExecutorService.execute {

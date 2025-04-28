@@ -203,6 +203,29 @@ class BillingDao(context: Context) {
     }
 
     /**
+     * 查询账单ID是否存在
+     * @param recordId 账单ID
+     * @return 查询结果
+     */
+    fun isRecordExists(recordId: Long): Boolean {
+        val projection = arrayOf(BillingDatabaseHelper.COLUMN_ID)
+        val selection = "${BillingDatabaseHelper.COLUMN_ID} = ?"
+        val selectionArgs = arrayOf(recordId.toString())
+        val cursor = readableDatabase.query(
+            BillingDatabaseHelper.TABLE_NAME,
+            projection,
+            selection,
+            selectionArgs,
+            null,
+            null,
+            null
+        )
+        return cursor.use {
+            it.moveToFirst()
+        }
+    }
+
+    /**
      * 查询指定多天内的账单条目列表
      * @param startDateInMillis 开始日期的毫秒级时间戳
      * @param endDateInMillis 结束日期的毫秒级时间戳
