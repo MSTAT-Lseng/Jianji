@@ -5,11 +5,15 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import m20.simple.bookkeeping.R
 import m20.simple.bookkeeping.databinding.FragmentSetupBinding
+import m20.simple.bookkeeping.utils.UIUtils
 
 class SetupFragment : Fragment() {
 
@@ -30,25 +34,49 @@ class SetupFragment : Fragment() {
         _binding = FragmentSetupBinding.inflate(inflater, container, false)
         val root: View = binding.root
 
-        val textView: TextView = binding.textSlideshow
-        setupViewModel.text.observe(viewLifecycleOwner) {
-            textView.text = it
-        }
         return root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        UIUtils().fillStatusBarHeight(requireContext(), binding.statusbarHeight)
         clearToolbarSubtitle()
+        configList(view)
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
+    private fun configList(view: View) {
+        val dataset = listOf(
+            // Wallet management
+            SetupListItem(R.drawable.wallet_icon,
+                getString(R.string.wallet_manage),
+                getString(R.string.wallet_manage_summary)),
+            // Scheduled plan
+            SetupListItem(R.drawable.clock_icon,
+                getString(R.string.scheduled_plan),
+                getString(R.string.scheduled_plan_summary)),
+            // Collect View
+            SetupListItem(R.drawable.collect_icon,
+                getString(R.string.collect_billing),
+                getString(R.string.collect_billing_summary)),
+        )
+
+        val listAdapter = SetupListAdapter(dataset)
+        listAdapter.onItemClick = { position ->
+            Toast.makeText(requireActivity(), "点击了第 $position 项", Toast.LENGTH_SHORT).show()
+        }
+        val recyclerView: RecyclerView = view.findViewById(R.id.list_view)
+        recyclerView.layoutManager = LinearLayoutManager(requireActivity())
+        recyclerView.adapter = listAdapter
+
     }
 
     private fun clearToolbarSubtitle() {
         val toolbar = activity?.findViewById<Toolbar>(R.id.toolbar)
         toolbar?.subtitle = null
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

@@ -84,4 +84,10 @@
     <string name="delete_billing">刪除帳單</string>
     <string name="delete_billing_hint">錢包餘額將會恢復。如果是訂金帳單，相關的實際消費帳單也會被刪除。</string>
     <string name="delete_billing_failed">刪除帳單失敗</string>
+    <string name="wallet_manage">錢包管理</string>
+    <string name="wallet_manage_summary">新增/修改錢包、設定預設錢包</string>
+    <string name="scheduled_plan">定時計劃</string>
+    <string name="scheduled_plan_summary">設定日期循環自動新增帳單記錄</string>
+    <string name="collect_billing">收藏帳單</string>
+    <string name="collect_billing_summary">檢視和管理收藏的帳單</string>
 </resources>

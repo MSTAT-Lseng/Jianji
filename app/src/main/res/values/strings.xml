@@ -83,4 +83,10 @@
     <string name="delete_billing">Delete bill</string>
     <string name="delete_billing_hint">The wallet balance will be restored. If it is a deposit bill, the related actual consumption bill will also be deleted.</string>
     <string name="delete_billing_failed">Failed to delete bill</string>
+    <string name="wallet_manage">Wallet Management</string>
+    <string name="wallet_manage_summary">Add/modify wallet, set default wallet.</string>
+    <string name="scheduled_plan">Scheduled plan</string>
+    <string name="scheduled_plan_summary">Set date cycle to automatically add bill records.</string>
+    <string name="collect_billing">Favorite bill</string>
+    <string name="collect_billing_summary">View and manage your favorite bills.</string>
 </resources>

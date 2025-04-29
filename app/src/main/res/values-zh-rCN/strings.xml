@@ -84,4 +84,10 @@
     <string name="delete_billing">删除账单</string>
     <string name="delete_billing_hint">钱包余额将会恢复。如果是订金账单，相关的实际消费账单也会被删除。</string>
     <string name="delete_billing_failed">删除账单失败</string>
+    <string name="wallet_manage">钱包管理</string>
+    <string name="wallet_manage_summary">添加/修改钱包、设置默认钱包</string>
+    <string name="scheduled_plan">定时计划</string>
+    <string name="scheduled_plan_summary">设置日期循环自动添加账单记录</string>
+    <string name="collect_billing">收藏账单</string>
+    <string name="collect_billing_summary">查看和管理收藏的账单</string>
 </resources>
