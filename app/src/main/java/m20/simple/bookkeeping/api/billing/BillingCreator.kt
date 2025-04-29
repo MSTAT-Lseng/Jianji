@@ -182,7 +182,34 @@ object BillingCreator {
             }
         }
 
+        billingDao.close()
         return Pair(CREATE_BILLING_SUCCESS, billingId)
+    }
+
+    // 推荐异步使用此方法
+    fun deleteBillingById(id: Int,
+                          context: Context) : Boolean {
+        val billingDao = BillingDao(context)
+        return try {
+            val recordToDelete = billingDao.getRecordById(id.toLong()) ?: return false.also { billingDao.close() }
+
+            WalletCreator.modifyWalletAmount(
+                context,
+                recordToDelete.wallet,
+                if (recordToDelete.iotype == 0) recordToDelete.amount else -recordToDelete.amount
+            )
+
+            val depositDelete = when (recordToDelete.deposit) {
+                "true" -> billingDao.deleteRecord((id + 1).toLong()) > 0
+                "consumption" -> billingDao.deleteRecord((id - 1).toLong()) > 0
+                else -> true
+            }
+
+            val recordDelete = billingDao.deleteRecord(id.toLong()) > 0
+            depositDelete && recordDelete
+        } finally {
+            billingDao.close()
+        }
     }
 
     // 推荐异步使用此方法

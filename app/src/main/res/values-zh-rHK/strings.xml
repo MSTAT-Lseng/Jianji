@@ -81,4 +81,7 @@
     <string name="picture_view_number">%s 張圖片</string>
     <string name="finish_activity">回上一頁</string>
     <string name="updated_billing_items">更新了 %d 個帳單項目</string>
+    <string name="delete_billing">刪除帳單</string>
+    <string name="delete_billing_hint">錢包餘額將會恢復。如果是訂金帳單，相關的實際消費帳單也會被刪除。</string>
+    <string name="delete_billing_failed">刪除帳單失敗</string>
 </resources>

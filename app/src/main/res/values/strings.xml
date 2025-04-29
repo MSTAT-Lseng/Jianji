@@ -80,4 +80,7 @@
     <string name="picture_view_number">%s images</string>
     <string name="finish_activity">Return to previous page</string>
     <string name="updated_billing_items">%d billing items updated</string>
+    <string name="delete_billing">Delete bill</string>
+    <string name="delete_billing_hint">The wallet balance will be restored. If it is a deposit bill, the related actual consumption bill will also be deleted.</string>
+    <string name="delete_billing_failed">Failed to delete bill</string>
 </resources>

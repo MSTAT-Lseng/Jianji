@@ -21,6 +21,7 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.carousel.CarouselLayoutManager
 import com.google.android.material.carousel.CarouselSnapHelper
 import com.google.android.material.carousel.HeroCarouselStrategy
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -250,13 +251,41 @@ class BillingInfoActivity : AppCompatActivity() {
             launcher.launch(intent)
         }
 
+        fun taskRemoveBilling() {
+            CoroutineScope(Dispatchers.Main).launch {
+                val removeCode = withContext(Dispatchers.IO) {
+                    val billingCreator = BillingCreator
+                    billingCreator.deleteBillingById(billId.toInt(), this@BillingInfoActivity)
+                }
+                if (removeCode) {
+                    modified = true; setModified(); finish()
+                    return@launch
+                }
+                Toast.makeText(
+                    this@BillingInfoActivity,
+                    getString(R.string.delete_billing_failed),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+
+        fun removeBilling() {
+            MaterialAlertDialogBuilder(this)
+                .setView(R.layout.dialog_remove_billing)
+                .setNegativeButton("取消") { _, _ -> }
+                .setPositiveButton("确认") { _, _ ->
+                    taskRemoveBilling()
+                }
+                .show()
+        }
+
         return when (item.itemId) {
             R.id.edit -> {
                 editBilling()
                 true
             }
             R.id.delete -> {
-                //UIUtils().showDeleteDialog(this, billId, this)
+                removeBilling()
                 true
             }
             else -> super.onOptionsItemSelected(item)

@@ -81,4 +81,7 @@
     <string name="picture_view_number">%s 张图片</string>
     <string name="finish_activity">返回上一页</string>
     <string name="updated_billing_items">更新了 %d 个账单项目</string>
+    <string name="delete_billing">删除账单</string>
+    <string name="delete_billing_hint">钱包余额将会恢复。如果是订金账单，相关的实际消费账单也会被删除。</string>
+    <string name="delete_billing_failed">删除账单失败</string>
 </resources>
