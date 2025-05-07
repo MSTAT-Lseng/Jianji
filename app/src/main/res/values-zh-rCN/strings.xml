@@ -72,7 +72,7 @@
     <string name="income">收入</string>
     <string name="realtime_pay">实时支付</string>
     <string name="deposit_pay">预付订金</string>
-    <string name="deposit_consumption">订金生效</string>
+    <string name="deposit_consumption">实际消费</string>
     <string name="bill_time">账单时间</string>
     <string name="copy_to_clipboard">已复制内容到剪贴板</string>
     <string name="wallet">钱包</string>
@@ -90,4 +90,7 @@
     <string name="scheduled_plan_summary">设置日期循环自动添加账单记录</string>
     <string name="collect_billing">收藏账单</string>
     <string name="collect_billing_summary">查看和管理收藏的账单</string>
+    <string name="wallet_management">钱包管理</string>
+    <string name="edit_deposit_date">修改实际消费日期</string>
+    <string name="jump_deposit_bill">跳转到订金账单页</string>
 </resources>

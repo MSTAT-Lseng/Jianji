@@ -42,6 +42,7 @@ class BillingInfoActivity : AppCompatActivity() {
 
     private var defaultBillId = -1L
     private var billId : Long = defaultBillId
+    private var depositStatus: String = "notSet"
     private var billCoroutineScope : Job? = null
     private var topBar : MaterialToolbar? = null
     private var modified : Boolean = false
@@ -192,17 +193,14 @@ class BillingInfoActivity : AppCompatActivity() {
 
 
             // Deposit Status
+            depositStatus = record?.deposit ?: depositStatus
             depositStatusText.text = when (record?.deposit) {
                 "true" -> getString(R.string.deposit_pay)
                 "false" -> getString(R.string.realtime_pay)
                 "consumption" -> getString(R.string.deposit_consumption)
                 else -> getString(R.string.realtime_pay)
             }
-            if (record?.deposit != "false") {
-                val menu = topBar?.menu
-                val profileItem = menu?.findItem(R.id.edit)
-                profileItem?.isVisible = false
-            }
+            invalidateOptionsMenu()
 
             // Wallet
             val walletName = withContext(Dispatchers.IO) {
@@ -243,6 +241,25 @@ class BillingInfoActivity : AppCompatActivity() {
         return true
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        val editItem = menu?.findItem(R.id.edit)
+        fun setDepositItem() {
+            editItem?.setIcon(R.drawable.edit_calendar)
+            editItem?.setTitle(R.string.edit_deposit_date)
+        }
+        fun setConsumptionItem() {
+            editItem?.setIcon(R.drawable.forward)
+            editItem?.setTitle(R.string.jump_deposit_bill)
+        }
+        when (depositStatus) {
+            "true" ->
+                setDepositItem()
+            "consumption" ->
+                setConsumptionItem()
+        }
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         fun editBilling() {
             val intent = Intent(this, CreateBillingActivity::class.java)
@@ -279,9 +296,25 @@ class BillingInfoActivity : AppCompatActivity() {
                 .show()
         }
 
+        fun taskEditBilling() {
+            when (depositStatus) {
+                "false" -> editBilling()
+                "true" -> {
+                }
+                "consumption" -> {
+                    modified = true; setModified()
+                    startActivity(Intent(this,
+                        BillingInfoActivity::class.java)
+                        .putExtra("billingId", billId - 1)
+                        .putExtra("modified", true))
+                    finish()
+                }
+            }
+        }
+
         return when (item.itemId) {
             R.id.edit -> {
-                editBilling()
+                taskEditBilling()
                 true
             }
             R.id.delete -> {

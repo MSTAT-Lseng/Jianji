@@ -1,5 +1,6 @@
 package m20.simple.bookkeeping.ui.setup
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -12,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import m20.simple.bookkeeping.R
+import m20.simple.bookkeeping.activities.WalletManageActivity
 import m20.simple.bookkeeping.databinding.FragmentSetupBinding
 import m20.simple.bookkeeping.utils.UIUtils
 
@@ -45,6 +47,24 @@ class SetupFragment : Fragment() {
     }
 
     private fun configList(view: View) {
+
+        fun taskClick(position: Int) {
+            when (position) {
+                0 -> {
+                    // Wallet management
+                    startActivity(Intent(requireActivity(), WalletManageActivity::class.java))
+                }
+                1 -> {
+                    // Scheduled plan
+                    Toast.makeText(requireContext(), "Scheduled plan clicked", Toast.LENGTH_SHORT).show()
+                }
+                2 -> {
+                    // Collect View
+                    Toast.makeText(requireContext(), "Collect View clicked", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
         val dataset = listOf(
             // Wallet management
             SetupListItem(R.drawable.wallet_icon,
@@ -62,7 +82,7 @@ class SetupFragment : Fragment() {
 
         val listAdapter = SetupListAdapter(dataset)
         listAdapter.onItemClick = { position ->
-            Toast.makeText(requireActivity(), "点击了第 $position 项", Toast.LENGTH_SHORT).show()
+            taskClick(position)
         }
         val recyclerView: RecyclerView = view.findViewById(R.id.list_view)
         recyclerView.layoutManager = LinearLayoutManager(requireActivity())

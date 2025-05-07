@@ -71,7 +71,7 @@
     <string name="income">Income</string>
     <string name="realtime_pay">Real-time payments</string>
     <string name="deposit_pay">Prepayment deposit</string>
-    <string name="deposit_consumption">Deposit effective</string>
+    <string name="deposit_consumption">Actual consumption</string>
     <string name="bill_time">Billing time</string>
     <string name="copy_to_clipboard">Content copied to clipboard</string>
     <string name="wallet">Wallet</string>
@@ -89,4 +89,7 @@
     <string name="scheduled_plan_summary">Set date cycle to automatically add bill records.</string>
     <string name="collect_billing">Favorite bill</string>
     <string name="collect_billing_summary">View and manage your favorite bills.</string>
+    <string name="wallet_management">Wallet Management</string>
+    <string name="edit_deposit_date">Modify the actual consumption date</string>
+    <string name="jump_deposit_bill">Go to the deposit bill page</string>
 </resources>
