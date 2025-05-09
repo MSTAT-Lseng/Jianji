@@ -6,7 +6,6 @@ import m20.simple.bookkeeping.R
 import m20.simple.bookkeeping.api.objects.BillingObject
 import m20.simple.bookkeeping.api.wallet.WalletCreator
 import m20.simple.bookkeeping.database.billing.BillingDao
-import m20.simple.bookkeeping.database.wallet.WalletDao
 import m20.simple.bookkeeping.utils.FileUtils
 import m20.simple.bookkeeping.utils.TimeUtils
 
@@ -14,9 +13,12 @@ object BillingCreator {
 
     private const val CREATE_BILLING_CHECK_SUCCESS = 0
     const val CREATE_BILLING_SUCCESS = 1
+    const val MODIFY_BILLING_DEPOSIT_PAY_DATE_SUCCESS = 2
     const val CREATE_BILLING_CHECK_FAILED = -1
     const val CREATE_BILLING_INSERT_FAILED = -2
     const val CREATE_BILLING_DEPOSIT_INSERT_FAILED = -3
+    const val MODIFY_BILLING_DEPOSIT_PAY_DATE_CHECK_FAILED = -4
+    const val MODIFY_BILLING_DEPOSIT_PAY_DATE_UPDATE_FAILED = -5
     const val CREATE_BILLING_TIME_CHECK_FAILED = -100
     const val CREATE_BILLING_DEPOSIT_TIME_CHECK_FAILED = -101
     const val CREATE_BILLING_AMOUNT_CHECK_FAILED = -102
@@ -25,6 +27,11 @@ object BillingCreator {
     const val CREATE_BILLING_DEPOSIT_TAG_CHECK_FAILED = -105
     const val CREATE_BILLING_WALLET_CHECK_FAILED = -106
     const val EDIT_BILLING_ID_CHECK_FAILED = -107
+    const val MODIFY_BILLING_DEPOSIT_PAY_DATE_ID_FAILED = -108
+    const val MODIFY_BILLING_DEPOSIT_PAY_DATE_CONSUMPTION_ID_FAILED = -109
+    const val MODIFY_BILLING_DEPOSIT_PAY_DATE_TYPE_FAILED = -110
+    const val MODIFY_BILLING_DEPOSIT_PAY_DATE_TIME_CHECK_FAILED = -111
+    const val MODIFY_BILLING_DEPOSIT_PAY_DATE_UNKNOWN_FAILED = -112
 
     private fun createBillingCheck(billingObject: BillingObject,
                                    depositBillingDate: Long = 0L): Int {
@@ -184,6 +191,98 @@ object BillingCreator {
 
         billingDao.close()
         return Pair(CREATE_BILLING_SUCCESS, billingId)
+    }
+
+    // 推荐异步使用此方法
+    fun modifyDepositBillingPayDate(
+        billingId: Int,
+        context: Context,
+        timestamp: Long
+    ): Pair<Int, Int> {
+        val billingDao = BillingDao(context)
+        val result: Pair<Int, Int> // 存储最终结果
+
+        try {
+            val billingRecord = billingDao.getRecordById(billingId.toLong())
+
+            // 检查ID是否存在
+            if (billingRecord == null) {
+                result = Pair(
+                    MODIFY_BILLING_DEPOSIT_PAY_DATE_CHECK_FAILED,
+                    MODIFY_BILLING_DEPOSIT_PAY_DATE_ID_FAILED
+                )
+                return result // 直接返回，并在finally中关闭DAO
+            }
+
+            val depositType = billingRecord.deposit
+            val consumptionId: Int // 确定要修改的记录ID
+
+            when (depositType) {
+                "true" -> {
+                    consumptionId = billingId + 1
+                }
+                "consumption" -> {
+                    consumptionId = billingId
+                }
+                else -> {
+                    result = Pair(
+                        MODIFY_BILLING_DEPOSIT_PAY_DATE_CHECK_FAILED,
+                        MODIFY_BILLING_DEPOSIT_PAY_DATE_TYPE_FAILED
+                    )
+                    return result // 直接返回，并在finally中关闭DAO
+                }
+            }
+
+            // 获取实际要修改的消费账单
+            val consumptionRecord = billingDao.getRecordById(consumptionId.toLong())
+
+            // 检查消费账单ID是否存在
+            if (consumptionRecord == null) {
+                result = Pair(
+                    MODIFY_BILLING_DEPOSIT_PAY_DATE_CHECK_FAILED,
+                    MODIFY_BILLING_DEPOSIT_PAY_DATE_CONSUMPTION_ID_FAILED
+                )
+                return result // 直接返回，并在finally中关闭DAO
+            }
+
+            // 认证日期合法性
+            if (timestamp <= billingRecord.time) {
+                result = Pair(
+                    MODIFY_BILLING_DEPOSIT_PAY_DATE_CHECK_FAILED,
+                    MODIFY_BILLING_DEPOSIT_PAY_DATE_TIME_CHECK_FAILED
+                )
+                return result // 直接返回，并在finally中关闭DAO
+            }
+
+            // 修改实际消费账单
+            val modifiedItemNumber = billingDao.updateRecord(
+                recordId = consumptionId.toLong(),
+                time = timestamp,
+                amount = consumptionRecord.amount,
+                iotype = consumptionRecord.iotype,
+                classify = consumptionRecord.classify,
+                notes = consumptionRecord.notes,
+                images = consumptionRecord.images,
+                deposit = consumptionRecord.deposit,
+                wallet = consumptionRecord.wallet,
+                tags = consumptionRecord.tags
+            )
+
+            result = if (modifiedItemNumber == 0) {
+                Pair(
+                    MODIFY_BILLING_DEPOSIT_PAY_DATE_UPDATE_FAILED,
+                    MODIFY_BILLING_DEPOSIT_PAY_DATE_UNKNOWN_FAILED
+                )
+            } else {
+                Pair(MODIFY_BILLING_DEPOSIT_PAY_DATE_SUCCESS, consumptionId)
+            }
+
+        } finally {
+            // 确保在任何情况下都关闭 DAO
+            billingDao.close()
+        }
+
+        return result
     }
 
     // 推荐异步使用此方法

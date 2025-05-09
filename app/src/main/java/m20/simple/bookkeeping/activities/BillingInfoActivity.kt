@@ -21,6 +21,7 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.carousel.CarouselLayoutManager
 import com.google.android.material.carousel.CarouselSnapHelper
 import com.google.android.material.carousel.HeroCarouselStrategy
+import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,10 +33,13 @@ import m20.simple.bookkeeping.api.billing.BillingCreator
 import m20.simple.bookkeeping.api.wallet.WalletCreator
 import m20.simple.bookkeeping.database.billing.BillingDao
 import m20.simple.bookkeeping.utils.FileUtils
+import m20.simple.bookkeeping.utils.TimeUtils
 import m20.simple.bookkeeping.utils.UIUtils
 import java.text.SimpleDateFormat
+import java.util.Calendar
 import java.util.Date
 import java.util.Locale
+import java.util.TimeZone
 
 
 class BillingInfoActivity : AppCompatActivity() {
@@ -300,6 +304,8 @@ class BillingInfoActivity : AppCompatActivity() {
             when (depositStatus) {
                 "false" -> editBilling()
                 "true" -> {
+                    val timestamp = TimeUtils.getDayLevelTimestamp()
+                    modifyDepositBillPayDate(timestamp)
                 }
                 "consumption" -> {
                     modified = true; setModified()
@@ -323,6 +329,32 @@ class BillingInfoActivity : AppCompatActivity() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun depositPayDateEdited(timestamp: Long) {
+        Toast.makeText(
+            this,
+            "timestamp: $timestamp",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+
+    private fun modifyDepositBillPayDate(timestamp: Long) {
+        val calendar = Calendar.getInstance(TimeZone.getDefault())
+        calendar.timeInMillis = timestamp
+
+        val initialSelection = timestamp
+        val datePicker =
+            MaterialDatePicker.Builder.datePicker()
+                .setTitleText(getString(R.string.select_actual_consumption_date))
+                .setSelection(initialSelection)
+                .build()
+
+        datePicker.addOnPositiveButtonClickListener { selection ->
+            depositPayDateEdited(selection)
+        }
+
+        datePicker.show(supportFragmentManager, "DATE_PICKER")
     }
 
 }

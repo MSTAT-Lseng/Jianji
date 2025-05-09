@@ -93,4 +93,5 @@
     <string name="wallet_management">钱包管理</string>
     <string name="edit_deposit_date">修改实际消费日期</string>
     <string name="jump_deposit_bill">跳转到订金账单页</string>
+    <string name="select_actual_consumption_date">选择实际消费日期</string>
 </resources>

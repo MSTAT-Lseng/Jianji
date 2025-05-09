@@ -92,4 +92,5 @@
     <string name="wallet_management">Wallet Management</string>
     <string name="edit_deposit_date">Modify the actual consumption date</string>
     <string name="jump_deposit_bill">Go to the deposit bill page</string>
+    <string name="select_actual_consumption_date">Select the actual consumption date</string>
 </resources>
