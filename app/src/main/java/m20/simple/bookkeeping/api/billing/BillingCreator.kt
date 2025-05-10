@@ -195,7 +195,7 @@ object BillingCreator {
 
     // 推荐异步使用此方法
     fun modifyDepositBillingPayDate(
-        billingId: Int,
+        billingId: Long,
         context: Context,
         timestamp: Long
     ): Pair<Int, Int> {
@@ -203,7 +203,7 @@ object BillingCreator {
         val result: Pair<Int, Int> // 存储最终结果
 
         try {
-            val billingRecord = billingDao.getRecordById(billingId.toLong())
+            val billingRecord = billingDao.getRecordById(billingId)
 
             // 检查ID是否存在
             if (billingRecord == null) {
@@ -215,7 +215,7 @@ object BillingCreator {
             }
 
             val depositType = billingRecord.deposit
-            val consumptionId: Int // 确定要修改的记录ID
+            val consumptionId: Long // 确定要修改的记录ID
 
             when (depositType) {
                 "true" -> {
@@ -234,7 +234,7 @@ object BillingCreator {
             }
 
             // 获取实际要修改的消费账单
-            val consumptionRecord = billingDao.getRecordById(consumptionId.toLong())
+            val consumptionRecord = billingDao.getRecordById(consumptionId)
 
             // 检查消费账单ID是否存在
             if (consumptionRecord == null) {
@@ -256,7 +256,7 @@ object BillingCreator {
 
             // 修改实际消费账单
             val modifiedItemNumber = billingDao.updateRecord(
-                recordId = consumptionId.toLong(),
+                recordId = consumptionId,
                 time = timestamp,
                 amount = consumptionRecord.amount,
                 iotype = consumptionRecord.iotype,
@@ -274,7 +274,7 @@ object BillingCreator {
                     MODIFY_BILLING_DEPOSIT_PAY_DATE_UNKNOWN_FAILED
                 )
             } else {
-                Pair(MODIFY_BILLING_DEPOSIT_PAY_DATE_SUCCESS, consumptionId)
+                Pair(MODIFY_BILLING_DEPOSIT_PAY_DATE_SUCCESS, consumptionId.toInt())
             }
 
         } finally {
@@ -339,6 +339,13 @@ object BillingCreator {
             CREATE_BILLING_CHECK_FAILED to R.string.create_billing_check_failed,
             CREATE_BILLING_INSERT_FAILED to R.string.create_billing_insert_failed,
             CREATE_BILLING_DEPOSIT_INSERT_FAILED to R.string.create_billing_deposit_insert_failed,
+            MODIFY_BILLING_DEPOSIT_PAY_DATE_CHECK_FAILED to R.string.modify_billing_deposit_pay_date_check_failed,
+            MODIFY_BILLING_DEPOSIT_PAY_DATE_ID_FAILED to R.string.modify_billing_deposit_pay_date_id_failed,
+            MODIFY_BILLING_DEPOSIT_PAY_DATE_TYPE_FAILED to R.string.modify_billing_deposit_pay_date_type_failed,
+            MODIFY_BILLING_DEPOSIT_PAY_DATE_CONSUMPTION_ID_FAILED to R.string.modify_billing_deposit_pay_date_consumption_id_failed,
+            MODIFY_BILLING_DEPOSIT_PAY_DATE_TIME_CHECK_FAILED to R.string.modify_billing_deposit_pay_date_time_check_failed,
+            MODIFY_BILLING_DEPOSIT_PAY_DATE_UPDATE_FAILED to R.string.modify_billing_deposit_pay_date_update_failed,
+            MODIFY_BILLING_DEPOSIT_PAY_DATE_UNKNOWN_FAILED to R.string.modify_billing_deposit_pay_date_unknown_failed,
         )
 
         return resources.getString(

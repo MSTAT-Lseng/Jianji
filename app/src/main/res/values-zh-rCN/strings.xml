@@ -94,4 +94,12 @@
     <string name="edit_deposit_date">修改实际消费日期</string>
     <string name="jump_deposit_bill">跳转到订金账单页</string>
     <string name="select_actual_consumption_date">选择实际消费日期</string>
+    <string name="modify_billing_deposit_pay_date_check_failed">检查出错</string>
+    <string name="modify_billing_deposit_pay_date_id_failed">账单ID不存在</string>
+    <string name="modify_billing_deposit_pay_date_type_failed">不是订金账单</string>
+    <string name="modify_billing_deposit_pay_date_consumption_id_failed">实际消费账单未找到</string>
+    <string name="modify_billing_deposit_pay_date_time_check_failed">@string/create_billing_deposit_time_check_failed</string>
+    <string name="modify_billing_deposit_pay_date_update_failed">更新失败</string>
+    <string name="modify_billing_deposit_pay_date_unknown_failed">更新时发生未知错误</string>
+    <string name="modify_deposit_pay_date_success">修改实际消费日期成功</string>
 </resources>

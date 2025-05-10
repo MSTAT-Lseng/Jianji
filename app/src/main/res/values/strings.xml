@@ -93,4 +93,12 @@
     <string name="edit_deposit_date">Modify the actual consumption date</string>
     <string name="jump_deposit_bill">Go to the deposit bill page</string>
     <string name="select_actual_consumption_date">Select the actual consumption date</string>
+    <string name="modify_billing_deposit_pay_date_check_failed">Check for errors</string>
+    <string name="modify_billing_deposit_pay_date_id_failed">Billing ID does not exist</string>
+    <string name="modify_billing_deposit_pay_date_type_failed">Not a deposit bill</string>
+    <string name="modify_billing_deposit_pay_date_consumption_id_failed">The actual consumption bill was not found</string>
+    <string name="modify_billing_deposit_pay_date_time_check_failed">@string/create_billing_deposit_time_check_failed</string>
+    <string name="modify_billing_deposit_pay_date_update_failed">Update failed</string>
+    <string name="modify_billing_deposit_pay_date_unknown_failed">An unknown error occurred while updating</string>
+    <string name="modify_deposit_pay_date_success">Modify the actual consumption date successfully</string>
 </resources>

@@ -36,6 +36,7 @@ import m20.simple.bookkeeping.utils.FileUtils
 import m20.simple.bookkeeping.utils.TimeUtils
 import m20.simple.bookkeeping.utils.UIUtils
 import java.text.SimpleDateFormat
+import java.time.ZoneId
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -331,27 +332,59 @@ class BillingInfoActivity : AppCompatActivity() {
         }
     }
 
+    private fun dialogUpdatePayDateFailed(
+        billingCreator: BillingCreator,
+        result: Pair<Int, Int>
+    ) {
+        MaterialAlertDialogBuilder(this@BillingInfoActivity)
+            .setTitle(
+                billingCreator.getCreateBillingFailedReason(result.first, resources)
+            )
+            .setMessage(
+                billingCreator.getCreateBillingFailedReason(result.second, resources)
+            )
+            .setPositiveButton(resources.getString(android.R.string.ok)) { dialog, which ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
     private fun depositPayDateEdited(timestamp: Long) {
-        Toast.makeText(
-            this,
-            "timestamp: $timestamp",
-            Toast.LENGTH_SHORT
-        ).show()
+        CoroutineScope(Dispatchers.Main).launch {
+            val billingCreator = BillingCreator
+            val result = withContext(Dispatchers.IO) {
+                billingCreator.modifyDepositBillingPayDate(billId, this@BillingInfoActivity, timestamp)
+            }
+
+            if (result.first == billingCreator.MODIFY_BILLING_DEPOSIT_PAY_DATE_SUCCESS) {
+                modified = true; setModified()
+                Toast.makeText(
+                    this@BillingInfoActivity,
+                    getString(R.string.modify_deposit_pay_date_success),
+                    Toast.LENGTH_SHORT
+                ).show()
+            } else {
+                dialogUpdatePayDateFailed(billingCreator, result)
+            }
+        }
     }
 
     private fun modifyDepositBillPayDate(timestamp: Long) {
-        val calendar = Calendar.getInstance(TimeZone.getDefault())
-        calendar.timeInMillis = timestamp
-
-        val initialSelection = timestamp
         val datePicker =
             MaterialDatePicker.Builder.datePicker()
                 .setTitleText(getString(R.string.select_actual_consumption_date))
-                .setSelection(initialSelection)
+                .setSelection(TimeUtils.convertTimestampToLocalDate(timestamp)
+                    .atStartOfDay(ZoneId.of("UTC"))
+                    .toInstant()
+                    .toEpochMilli())
                 .build()
 
         datePicker.addOnPositiveButtonClickListener { selection ->
-            depositPayDateEdited(selection)
+            val selectedDate = TimeUtils.getDateFromTimestamp(selection).apply {
+                hours = 0
+                minutes = 0
+            }
+            depositPayDateEdited(selectedDate.time)
         }
 
         datePicker.show(supportFragmentManager, "DATE_PICKER")
