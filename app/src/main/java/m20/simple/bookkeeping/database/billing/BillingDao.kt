@@ -34,7 +34,7 @@ class BillingDao(context: Context) {
      */
     fun addRecord(
         time: Long,
-        amount: Int,
+        amount: Long,
         iotype: Int,
         classify: String,
         notes: String?,
@@ -85,7 +85,7 @@ class BillingDao(context: Context) {
     fun updateRecord(
         recordId: Long,
         time: Long,
-        amount: Int,
+        amount: Long,
         iotype: Int,
         classify: String,
         notes: String?,
@@ -290,7 +290,7 @@ class BillingDao(context: Context) {
         return Record(
             id = cursor.getLong(cursor.getColumnIndexOrThrow(BillingDatabaseHelper.COLUMN_ID)),
             time = cursor.getLong(cursor.getColumnIndexOrThrow(BillingDatabaseHelper.COLUMN_TIME)),
-            amount = cursor.getInt(cursor.getColumnIndexOrThrow(BillingDatabaseHelper.COLUMN_AMOUNT)),
+            amount = cursor.getLong(cursor.getColumnIndexOrThrow(BillingDatabaseHelper.COLUMN_AMOUNT)),
             iotype = cursor.getInt(cursor.getColumnIndexOrThrow(BillingDatabaseHelper.COLUMN_IOTYPE)),
             classify = cursor.getString(cursor.getColumnIndexOrThrow(BillingDatabaseHelper.COLUMN_CLASSIFY)),
             notes = cursor.getString(cursor.getColumnIndexOrThrow(BillingDatabaseHelper.COLUMN_NOTES)),
@@ -307,7 +307,7 @@ class BillingDao(context: Context) {
     data class Record(
         val id: Long,
         val time: Long,
-        val amount: Int,
+        val amount: Long,
         val iotype: Int,
         val classify: String,
         val notes: String?,

@@ -6,7 +6,6 @@ import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
 import android.widget.LinearLayout
-import android.widget.Toast
 import kotlin.math.abs
 
 class CustomLinearLayout : LinearLayout {

@@ -37,11 +37,8 @@ import m20.simple.bookkeeping.utils.TimeUtils
 import m20.simple.bookkeeping.utils.UIUtils
 import java.text.SimpleDateFormat
 import java.time.ZoneId
-import java.util.Calendar
 import java.util.Date
 import java.util.Locale
-import java.util.TimeZone
-
 
 class BillingInfoActivity : AppCompatActivity() {
 
@@ -183,7 +180,7 @@ class BillingInfoActivity : AppCompatActivity() {
             // Amount
             ioTypeText.text = if (ioType == 0) "-" else "+"
             ioTypeText.contentDescription = if (ioType == 0) getString(R.string.expenditure) else getString(R.string.income)
-            amountText.text = if (record?.amount == 0) "0.00" else WalletCreator.convertAmountFormat(record?.amount.toString())
+            amountText.text = if (record?.amount == 0L) "0.00" else WalletCreator.convertAmountFormat(record?.amount.toString())
 
             // Amount color
             amountText.setTextColor(color)
@@ -209,7 +206,7 @@ class BillingInfoActivity : AppCompatActivity() {
 
             // Wallet
             val walletName = withContext(Dispatchers.IO) {
-                WalletCreator.getWalletNameAndBalance(this@BillingInfoActivity, record?.wallet!!.toLong())!!.first
+                WalletCreator.getWalletNameAndBalance(this@BillingInfoActivity, record?.wallet!!)!!.first
             }
             listContainer.addView(getBillingItemView(R.drawable.account_balance_wallet_300,
                 resources.getString(R.string.wallet),
@@ -269,7 +266,7 @@ class BillingInfoActivity : AppCompatActivity() {
         fun editBilling() {
             val intent = Intent(this, CreateBillingActivity::class.java)
             intent.putExtra("isEditBilling", true)
-            intent.putExtra("billingId", billId.toInt())
+            intent.putExtra("billingId", billId)
             launcher.launch(intent)
         }
 
@@ -277,7 +274,7 @@ class BillingInfoActivity : AppCompatActivity() {
             CoroutineScope(Dispatchers.Main).launch {
                 val removeCode = withContext(Dispatchers.IO) {
                     val billingCreator = BillingCreator
-                    billingCreator.deleteBillingById(billId.toInt(), this@BillingInfoActivity)
+                    billingCreator.deleteBillingById(billId, this@BillingInfoActivity)
                 }
                 if (removeCode) {
                     modified = true; setModified(); finish()
@@ -334,14 +331,14 @@ class BillingInfoActivity : AppCompatActivity() {
 
     private fun dialogUpdatePayDateFailed(
         billingCreator: BillingCreator,
-        result: Pair<Int, Int>
+        result: Pair<Int, Long>
     ) {
         MaterialAlertDialogBuilder(this@BillingInfoActivity)
             .setTitle(
                 billingCreator.getCreateBillingFailedReason(result.first, resources)
             )
             .setMessage(
-                billingCreator.getCreateBillingFailedReason(result.second, resources)
+                billingCreator.getCreateBillingFailedReason(result.second.toInt(), resources)
             )
             .setPositiveButton(resources.getString(android.R.string.ok)) { dialog, which ->
                 dialog.dismiss()

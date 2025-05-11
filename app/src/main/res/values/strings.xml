@@ -101,4 +101,11 @@
     <string name="modify_billing_deposit_pay_date_update_failed">Update failed</string>
     <string name="modify_billing_deposit_pay_date_unknown_failed">An unknown error occurred while updating</string>
     <string name="modify_deposit_pay_date_success">Modify the actual consumption date successfully</string>
+    <string name="wallet_amount">Balance: %s</string>
+    <string name="default_wallet_tag">default</string>
+    <string name="rename_wallet_name">Modify wallet name</string>
+    <string name="delete_wallet_name">Delete this wallet</string>
+    <string name="set_default_wallet">Set as default wallet</string>
+    <string name="options">Options</string>
+    <string name="add_wallet">Add a wallet</string>
 </resources>

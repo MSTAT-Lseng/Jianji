@@ -2,7 +2,6 @@ package m20.simple.bookkeeping.activities
 
 import android.app.Activity
 import android.content.Intent
-import android.content.res.Resources
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
@@ -29,7 +28,6 @@ import com.google.android.material.timepicker.TimeFormat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import m20.simple.bookkeeping.R
@@ -58,7 +56,7 @@ import java.util.concurrent.Executors
 class CreateBillingActivity : AppCompatActivity() {
 
     private var isEditBilling: Boolean? = null
-    private var isEditBillingId: Int? = null
+    private var isEditBillingId: Long? = null
     private var editBillingRecord: BillingDao.Record? = null
 
     private val billingObject = BillingObject(
@@ -97,7 +95,7 @@ class CreateBillingActivity : AppCompatActivity() {
         uiUtils.setStatusBarTextColor(this, !uiUtils.isDarkMode(resources))
 
         isEditBilling = intent.getBooleanExtra("isEditBilling", false)
-        isEditBillingId = intent.getIntExtra("billingId", -1)
+        isEditBillingId = intent.getLongExtra("billingId", -1)
 
         fun initBillingObject() {
             if (!isEditBilling!!) return
@@ -136,7 +134,7 @@ class CreateBillingActivity : AppCompatActivity() {
             editBillingRecord = if (isEditBilling == true) {
                 withContext(Dispatchers.IO) {
                     BillingCreator.getRecordById(
-                        isEditBillingId!!.toLong(),
+                        isEditBillingId!!,
                         this@CreateBillingActivity
                     )
                 }
@@ -199,7 +197,7 @@ class CreateBillingActivity : AppCompatActivity() {
                     val failedMessage = when (status) {
                         BillingCreator.CREATE_BILLING_CHECK_FAILED -> {
                             BillingCreator.getCreateBillingFailedReason(status, resources) +
-                                    BillingCreator.getCreateBillingFailedReason(code, resources)
+                                    BillingCreator.getCreateBillingFailedReason(code.toInt(), resources)
                         }
 
                         BillingCreator.CREATE_BILLING_INSERT_FAILED,
@@ -238,7 +236,7 @@ class CreateBillingActivity : AppCompatActivity() {
         fun taskAmount(amount: String) {
             val original = amount.toBigDecimal()
             val rounded = original.setScale(2, RoundingMode.HALF_UP)
-            billingObject.amount = rounded.toPlainString().replace(".", "").toInt()
+            billingObject.amount = rounded.toPlainString().replace(".", "").toLong()
         }
 
         editText.doAfterTextChanged { editable ->

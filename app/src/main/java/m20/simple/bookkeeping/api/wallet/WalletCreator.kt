@@ -10,7 +10,7 @@ object WalletCreator {
     fun getAllWallets(context: Context): List<Pair<Int, String>> {
         val walletDao = WalletDao(context)
         return walletDao.getAllWallets()
-            .map { Pair(it.id.toInt(), it.name) }
+            .map { Pair(it.id, it.name) }
             .sortedBy { it.first }
     }
 
@@ -26,22 +26,28 @@ object WalletCreator {
 
         val walletDao = WalletDao(context)
         return walletDao.getAllWallets()
-            .find { it.id.toInt() == defaultWalletID }
+            .find { it.id == defaultWalletID }
             ?.let { Pair(defaultWalletID, it.name) }
     }
 
-    // 修改钱包余额，传入：钱包ID、修改数值，返回余额，建议使用异步执行函数
-    fun modifyWalletAmount(context: Context, walletID: Int, amount: Int): Int? {
+    // 更改钱包名称，传入ID
+    fun renameWallet(context: Context, walletID: Int, newName: String): Boolean {
+        val walletDao = WalletDao(context)
+        return walletDao.updateWalletName(walletID, newName) > 0
+    }
+
+    // 修改钱包余额，传入：钱包ID、修改数值，返回受影响的行数，建议使用异步执行函数
+    fun modifyWalletAmount(context: Context, walletID: Int, amount: Long): Int? {
         return WalletDao(context).run {
-            getWalletNameAndBalance(walletID.toLong())?.let { (_, balance) ->
+            getWalletNameAndBalance(walletID)?.let { (_, balance) ->
                 val newAmount = (balance ?: 0) + amount
-                updateWalletBalance(walletID.toLong(), newAmount)
+                updateWalletBalance(walletID, newAmount)
             }
         }
     }
 
     // 根据ID查看钱包名称和余额
-    fun getWalletNameAndBalance(context: Context, walletId: Long): Pair<String?, Int?>? {
+    fun getWalletNameAndBalance(context: Context, walletId: Int): Pair<String?, Long?>? {
         val walletDao = WalletDao(context)
         return walletDao.getWalletNameAndBalance(walletId)?.let {
             Pair(it.first, it.second)

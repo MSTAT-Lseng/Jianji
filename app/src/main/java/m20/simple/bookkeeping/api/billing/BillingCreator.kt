@@ -76,11 +76,11 @@ object BillingCreator {
     // 推荐异步使用此方法
     fun createBilling(billingObject: BillingObject,
                       depositBillingDate: Long,
-                      context: Context): Pair<Int, Int> {
+                      context: Context): Pair<Int, Long> {
 
         val checkBilling = createBillingCheck(billingObject, depositBillingDate)
         if (checkBilling != CREATE_BILLING_CHECK_SUCCESS) {
-            return Pair(CREATE_BILLING_CHECK_FAILED, checkBilling)
+            return Pair(CREATE_BILLING_CHECK_FAILED, checkBilling.toLong())
         }
 
         fun insertBilling(insertObject: BillingObject): Long {
@@ -102,7 +102,7 @@ object BillingCreator {
 
         val billingID = insertBilling(billingObject)
         if (billingID == -1L) {
-            return Pair(CREATE_BILLING_INSERT_FAILED, billingID.toInt())
+            return Pair(CREATE_BILLING_INSERT_FAILED, billingID)
         }
 
         if (billingObject.deposit == "true") {
@@ -112,7 +112,7 @@ object BillingCreator {
             )
             val depositID = insertBilling(depositBilling)
             if (depositID == -1L) {
-                return Pair(CREATE_BILLING_DEPOSIT_INSERT_FAILED, depositID.toInt())
+                return Pair(CREATE_BILLING_DEPOSIT_INSERT_FAILED, depositID)
             }
         }
 
@@ -123,32 +123,32 @@ object BillingCreator {
             if (billingObject.iotype == 0) -billingObject.amount else billingObject.amount
         )
 
-        return Pair(CREATE_BILLING_SUCCESS, billingID.toInt())
+        return Pair(CREATE_BILLING_SUCCESS, billingID)
     }
 
     // 推荐异步使用此方法
-    fun modifyBilling(billingId: Int,
+    fun modifyBilling(billingId: Long,
                       billingObject: BillingObject,
-                      context: Context): Pair<Int, Int> {
+                      context: Context): Pair<Int, Long> {
         val billingDao = BillingDao(context)
 
         // 检查ID是否存在
-        if (!billingDao.isRecordExists(billingId.toLong())) {
+        if (!billingDao.isRecordExists(billingId)) {
             billingDao.close()
-            return Pair(CREATE_BILLING_CHECK_FAILED, EDIT_BILLING_ID_CHECK_FAILED)
+            return Pair(CREATE_BILLING_CHECK_FAILED, EDIT_BILLING_ID_CHECK_FAILED.toLong())
         }
 
-        val originalBillingDao = billingDao.getRecordById(billingId.toLong())
+        val originalBillingDao = billingDao.getRecordById(billingId)
 
         // 检查修改的object是否合规
         val checkBilling = createBillingCheck(billingObject)
         if (checkBilling != CREATE_BILLING_CHECK_SUCCESS) {
-            return Pair(CREATE_BILLING_CHECK_FAILED, checkBilling)
+            return Pair(CREATE_BILLING_CHECK_FAILED, checkBilling.toLong())
         }
 
         // 修改账单
         val modifiedItemNumber = billingDao.updateRecord(
-            recordId = billingId.toLong(),
+            recordId = billingId,
             time = billingObject.time,
             amount = billingObject.amount,
             iotype = billingObject.iotype,
@@ -162,11 +162,11 @@ object BillingCreator {
 
         // 修改钱包内的余额
         val walletCreator = WalletCreator
-        fun getDelta(iotype: Int, amount: Int) = if (iotype == 0) amount else -amount
+        fun getDelta(iotype: Int, amount: Long) = if (iotype == 0) amount else -amount
         walletCreator.modifyWalletAmount(
             context,
             originalBillingDao!!.wallet,
-            getDelta(originalBillingDao.iotype, billingObject.amount)
+            getDelta(originalBillingDao.iotype, originalBillingDao.amount)
         )
         walletCreator.modifyWalletAmount(
             context,
@@ -198,9 +198,9 @@ object BillingCreator {
         billingId: Long,
         context: Context,
         timestamp: Long
-    ): Pair<Int, Int> {
+    ): Pair<Int, Long> {
         val billingDao = BillingDao(context)
-        val result: Pair<Int, Int> // 存储最终结果
+        val result: Pair<Int, Long> // 存储最终结果
 
         try {
             val billingRecord = billingDao.getRecordById(billingId)
@@ -209,7 +209,7 @@ object BillingCreator {
             if (billingRecord == null) {
                 result = Pair(
                     MODIFY_BILLING_DEPOSIT_PAY_DATE_CHECK_FAILED,
-                    MODIFY_BILLING_DEPOSIT_PAY_DATE_ID_FAILED
+                    MODIFY_BILLING_DEPOSIT_PAY_DATE_ID_FAILED.toLong()
                 )
                 return result // 直接返回，并在finally中关闭DAO
             }
@@ -227,7 +227,7 @@ object BillingCreator {
                 else -> {
                     result = Pair(
                         MODIFY_BILLING_DEPOSIT_PAY_DATE_CHECK_FAILED,
-                        MODIFY_BILLING_DEPOSIT_PAY_DATE_TYPE_FAILED
+                        MODIFY_BILLING_DEPOSIT_PAY_DATE_TYPE_FAILED.toLong()
                     )
                     return result // 直接返回，并在finally中关闭DAO
                 }
@@ -240,7 +240,7 @@ object BillingCreator {
             if (consumptionRecord == null) {
                 result = Pair(
                     MODIFY_BILLING_DEPOSIT_PAY_DATE_CHECK_FAILED,
-                    MODIFY_BILLING_DEPOSIT_PAY_DATE_CONSUMPTION_ID_FAILED
+                    MODIFY_BILLING_DEPOSIT_PAY_DATE_CONSUMPTION_ID_FAILED.toLong()
                 )
                 return result // 直接返回，并在finally中关闭DAO
             }
@@ -249,7 +249,7 @@ object BillingCreator {
             if (timestamp <= billingRecord.time) {
                 result = Pair(
                     MODIFY_BILLING_DEPOSIT_PAY_DATE_CHECK_FAILED,
-                    MODIFY_BILLING_DEPOSIT_PAY_DATE_TIME_CHECK_FAILED
+                    MODIFY_BILLING_DEPOSIT_PAY_DATE_TIME_CHECK_FAILED.toLong()
                 )
                 return result // 直接返回，并在finally中关闭DAO
             }
@@ -271,10 +271,10 @@ object BillingCreator {
             result = if (modifiedItemNumber == 0) {
                 Pair(
                     MODIFY_BILLING_DEPOSIT_PAY_DATE_UPDATE_FAILED,
-                    MODIFY_BILLING_DEPOSIT_PAY_DATE_UNKNOWN_FAILED
+                    MODIFY_BILLING_DEPOSIT_PAY_DATE_UNKNOWN_FAILED.toLong()
                 )
             } else {
-                Pair(MODIFY_BILLING_DEPOSIT_PAY_DATE_SUCCESS, consumptionId.toInt())
+                Pair(MODIFY_BILLING_DEPOSIT_PAY_DATE_SUCCESS, consumptionId)
             }
 
         } finally {
@@ -286,11 +286,11 @@ object BillingCreator {
     }
 
     // 推荐异步使用此方法
-    fun deleteBillingById(id: Int,
+    fun deleteBillingById(id: Long,
                           context: Context) : Boolean {
         val billingDao = BillingDao(context)
         return try {
-            val recordToDelete = billingDao.getRecordById(id.toLong()) ?: return false.also { billingDao.close() }
+            val recordToDelete = billingDao.getRecordById(id) ?: return false.also { billingDao.close() }
 
             WalletCreator.modifyWalletAmount(
                 context,
@@ -299,12 +299,12 @@ object BillingCreator {
             )
 
             val depositDelete = when (recordToDelete.deposit) {
-                "true" -> billingDao.deleteRecord((id + 1).toLong()) > 0
-                "consumption" -> billingDao.deleteRecord((id - 1).toLong()) > 0
+                "true" -> billingDao.deleteRecord((id + 1)) > 0
+                "consumption" -> billingDao.deleteRecord((id - 1)) > 0
                 else -> true
             }
 
-            val recordDelete = billingDao.deleteRecord(id.toLong()) > 0
+            val recordDelete = billingDao.deleteRecord(id) > 0
             depositDelete && recordDelete
         } finally {
             billingDao.close()

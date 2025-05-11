@@ -13,7 +13,7 @@ class WalletDao(context: Context) {
     private val closeDatabase = true
 
     // 添加一个钱包
-    fun addWallet(name: String, balance: Int = 0): Long {
+    fun addWallet(name: String, balance: Long = 0): Int {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(WalletDatabaseHelper.COLUMN_NAME, name)
@@ -21,11 +21,11 @@ class WalletDao(context: Context) {
         }
         val newRowId = db.insert(WalletDatabaseHelper.TABLE_WALLET, null, values)
         db.takeIf { closeDatabase }?.close()
-        return newRowId
+        return newRowId.toInt()
     }
 
     // 根据ID删除钱包
-    fun deleteWallet(walletId: Long): Int {
+    fun deleteWallet(walletId: Int): Int {
         val db = dbHelper.writableDatabase
         val selection = "${WalletDatabaseHelper.COLUMN_ID} = ?"
         val selectionArgs = arrayOf(walletId.toString())
@@ -35,7 +35,7 @@ class WalletDao(context: Context) {
     }
 
     // 根据ID修改钱包名称
-    fun updateWalletName(walletId: Long, newName: String): Int {
+    fun updateWalletName(walletId: Int, newName: String): Int {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(WalletDatabaseHelper.COLUMN_NAME, newName)
@@ -48,7 +48,7 @@ class WalletDao(context: Context) {
     }
 
     // 根据ID修改钱包余额
-    fun updateWalletBalance(walletId: Long, newBalance: Int): Int {
+    fun updateWalletBalance(walletId: Int, newBalance: Long): Int {
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(WalletDatabaseHelper.COLUMN_BALANCE, newBalance)
@@ -61,7 +61,7 @@ class WalletDao(context: Context) {
     }
 
     // 根据ID查看钱包名称和余额
-    fun getWalletNameAndBalance(walletId: Long): Pair<String?, Int?>? {
+    fun getWalletNameAndBalance(walletId: Int): Pair<String?, Long?>? {
         val db = dbHelper.readableDatabase
         val projection = arrayOf(
             WalletDatabaseHelper.COLUMN_NAME,
@@ -80,19 +80,19 @@ class WalletDao(context: Context) {
         )
 
         var name: String? = null
-        var balance: Int? = null
+        var balance: Long? = null
         cursor.use {
             if (it.moveToFirst()) {
                 name = it.getString(it.getColumnIndexOrThrow(WalletDatabaseHelper.COLUMN_NAME))
-                balance = it.getInt(it.getColumnIndexOrThrow(WalletDatabaseHelper.COLUMN_BALANCE))
+                balance = it.getLong(it.getColumnIndexOrThrow(WalletDatabaseHelper.COLUMN_BALANCE))
             }
         }
         db.takeIf { closeDatabase }?.close()
-        return if (name != null && balance != null) Pair(name, balance) else null
+        return if (name != null) Pair(name, balance) else null
     }
 
     // 根据钱包名称获取钱包ID
-    fun getWalletIdByName(walletName: String): Long? {
+    fun getWalletIdByName(walletName: String): Int? {
         val db = dbHelper.readableDatabase
         val projection = arrayOf(WalletDatabaseHelper.COLUMN_ID)
         val selection = "${WalletDatabaseHelper.COLUMN_NAME} = ?"
@@ -107,10 +107,10 @@ class WalletDao(context: Context) {
             null
         )
 
-        var walletId: Long? = null
+        var walletId: Int? = null
         cursor.use {
             if (it.moveToFirst()) {
-                walletId = it.getLong(it.getColumnIndexOrThrow(WalletDatabaseHelper.COLUMN_ID))
+                walletId = it.getInt(it.getColumnIndexOrThrow(WalletDatabaseHelper.COLUMN_ID))
             }
         }
         db.takeIf { closeDatabase }?.close()
@@ -160,9 +160,9 @@ class WalletDao(context: Context) {
 
         cursor.use {
             while (it.moveToNext()) {
-                val id = it.getLong(it.getColumnIndexOrThrow(WalletDatabaseHelper.COLUMN_ID))
+                val id = it.getInt(it.getColumnIndexOrThrow(WalletDatabaseHelper.COLUMN_ID))
                 val name = it.getString(it.getColumnIndexOrThrow(WalletDatabaseHelper.COLUMN_NAME))
-                val balance = it.getInt(it.getColumnIndexOrThrow(WalletDatabaseHelper.COLUMN_BALANCE))
+                val balance = it.getLong(it.getColumnIndexOrThrow(WalletDatabaseHelper.COLUMN_BALANCE))
                 walletList.add(WalletInfo(id, name, balance))
             }
         }
@@ -170,5 +170,5 @@ class WalletDao(context: Context) {
         return walletList
     }
 
-    data class WalletInfo(val id: Long, val name: String, val balance: Int)
+    data class WalletInfo(val id: Int, val name: String, val balance: Long)
 }

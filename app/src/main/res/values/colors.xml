@@ -149,4 +149,6 @@
     <color name="iotype_income">#388E3C</color>
     <color name="billing_paid_icon_colors">#331f1f1f</color>
     <color name="picture_view_header">#323232</color>
+    <color name="default_wallet_tag_background">#e8f5e9</color>
+    <color name="default_wallet_tag">#4caf50</color>
 </resources>

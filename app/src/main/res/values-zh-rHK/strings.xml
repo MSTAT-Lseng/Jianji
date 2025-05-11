@@ -102,4 +102,11 @@
     <string name="modify_billing_deposit_pay_date_update_failed">更新失敗</string>
     <string name="modify_billing_deposit_pay_date_unknown_failed">更新時發生未知錯誤</string>
     <string name="modify_deposit_pay_date_success">修改實際消費日期成功</string>
+    <string name="wallet_amount">餘額：%s</string>
+    <string name="default_wallet_tag">預設</string>
+    <string name="rename_wallet_name">修改錢包名稱</string>
+    <string name="delete_wallet_name">刪除錢包</string>
+    <string name="set_default_wallet">設為預設錢包</string>
+    <string name="options">選項</string>
+    <string name="add_wallet">添加錢包</string>
 </resources>

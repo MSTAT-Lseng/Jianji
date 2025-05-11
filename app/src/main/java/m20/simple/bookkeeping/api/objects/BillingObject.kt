@@ -2,7 +2,7 @@ package m20.simple.bookkeeping.api.objects
 
 data class BillingObject (
     var time: Long,
-    var amount: Int,
+    var amount: Long,
     var iotype: Int,
     var classify: String,
     var notes: String?,
