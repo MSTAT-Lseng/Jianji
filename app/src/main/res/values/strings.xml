@@ -108,4 +108,6 @@
     <string name="set_default_wallet">Set as default wallet</string>
     <string name="options">Options</string>
     <string name="add_wallet">Add a wallet</string>
+    <string name="nav_title">%s %s</string>
+    <string name="billing_not_found">No billing information found</string>
 </resources>

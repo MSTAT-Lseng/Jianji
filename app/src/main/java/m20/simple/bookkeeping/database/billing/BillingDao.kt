@@ -113,9 +113,9 @@ class BillingDao(context: Context) {
     /**
      * 根据 ID 查询单个账单条目的内容
      * @param recordId 要查询的记录 ID
-     * @return 如果找到记录则返回 Record 对象，否则返回 null
+     * @return 如果找到记录则返回 Record 对象，否则返回一个空的 Record 对象
      */
-    fun getRecordById(recordId: Long): Record? {
+    fun getRecordById(recordId: Long): Record {
         val projection = arrayOf(
             BillingDatabaseHelper.COLUMN_ID,
             BillingDatabaseHelper.COLUMN_TIME,
@@ -144,7 +144,18 @@ class BillingDao(context: Context) {
             if (it.moveToFirst()) {
                 cursorToRecord(it)
             } else {
-                null
+                Record(
+                    id = -1,
+                    time = 0,
+                    amount = 0,
+                    iotype = 0,
+                    classify = "",
+                    notes = null,
+                    images = null,
+                    deposit = "",
+                    wallet = 0,
+                    tags = null
+                ) // 返回一个空的 Record 对象
             }
         }
     }

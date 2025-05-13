@@ -93,14 +93,17 @@ class MainActivity : AppCompatActivity() {
         })
     }
 
-    fun configNavigationHeader() {
+    private fun configNavigationHeader() {
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
         val headerView = navigationView.getHeaderView(0)
         val textView = headerView.findViewById<TextView>(R.id.titleView)
-        textView.text = "${getText(R.string.app_name)} (${PackageUtils(this).getVersionName()})"
+        textView.text = getString(R.string.nav_title,
+            getString(R.string.app_name),
+            PackageUtils(this).getVersionName()
+        )
     }
 
-    fun sendToolbarMessage() {
+    private fun sendToolbarMessage() {
         viewModel.toolbarMessage.value = true
     }
 }

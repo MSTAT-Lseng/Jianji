@@ -41,7 +41,7 @@ class WalletListAdapter(
         val item = dataSet[position]
         viewHolder.walletNameTextView.text = item.walletName
         viewHolder.walletAmountTextView.text = resources.getString(R.string.wallet_amount,
-            if (item.walletAmount == 0L) "0.00" else WalletCreator.convertAmountFormat(item.walletAmount.toString())
+            WalletCreator.convertAmountFormat(item.walletAmount.toString())
         )
         if (item.isDefaultWallet) viewHolder.walletDefaultTagView.visibility = View.VISIBLE
 

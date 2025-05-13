@@ -46,7 +46,6 @@ import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
@@ -82,7 +81,7 @@ class CreateBillingActivity : AppCompatActivity() {
     private var loadEditBillingCoroutineScope: Job? = null
 
     companion object {
-        val createBillingReturnedKey = "createdBilling"
+        const val createBillingReturnedKey = "createdBilling"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -140,6 +139,13 @@ class CreateBillingActivity : AppCompatActivity() {
                 }
             } else {
                 null
+            }
+            // 空值检查
+            if (isEditBilling == true && editBillingRecord?.id == -1L) {
+                Toast.makeText(this@CreateBillingActivity,
+                    R.string.billing_not_found, Toast.LENGTH_SHORT).show()
+                finish()
+                return@launch
             }
             initBillingObject()
             initComponent()
@@ -211,7 +217,7 @@ class CreateBillingActivity : AppCompatActivity() {
                     MaterialAlertDialogBuilder(this@CreateBillingActivity)
                         .setTitle(resources.getString(R.string.create_billing_failed))
                         .setMessage(failedMessage)
-                        .setPositiveButton(resources.getString(R.string.billing_alert_okay)) { dialog, which ->
+                        .setPositiveButton(resources.getString(R.string.billing_alert_okay)) { _, _ ->
                             // Respond to positive button press
                         }
                         .show()
@@ -303,13 +309,13 @@ class CreateBillingActivity : AppCompatActivity() {
                 .setTitle(resources.getString(R.string.deposit_selected_hint_title))
                 .setMessage(resources.getString(R.string.deposit_selected_hint_message))
                 .setCancelable(false)
-                .setNeutralButton(resources.getString(R.string.deposit_never_show)) { dialog, which ->
+                .setNeutralButton(resources.getString(R.string.deposit_never_show)) { _, _ ->
                     HintConfig.setBooleanValue(
                         this, HintConfig.KEY_DEPOSIT_BILL_HINT, false
                     )
                     setDepositDate()
                 }
-                .setPositiveButton(resources.getString(R.string.deposit_ok)) { dialog, which ->
+                .setPositiveButton(resources.getString(R.string.deposit_ok)) { _, _ ->
                     setDepositDate()
                 }
                 .show()
@@ -524,8 +530,8 @@ class CreateBillingActivity : AppCompatActivity() {
         }
 
         walletExecutorService.execute {
-            WalletCreator.getDefaultWallet(this)
-                ?.let { (defaultWalletID, _) ->
+            WalletCreator.getDefaultWallet(this, resources)
+                .let { (defaultWalletID, _) ->
                     val allWallets = WalletCreator.getAllWallets(this)
                     runOnUiThread { updateUi(allWallets, defaultWalletID) }
                 }

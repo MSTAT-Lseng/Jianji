@@ -147,7 +147,7 @@ object BillingCreator {
         }
 
         // 修改账单
-        val modifiedItemNumber = billingDao.updateRecord(
+        billingDao.updateRecord(
             recordId = billingId,
             time = billingObject.time,
             amount = billingObject.amount,
@@ -165,7 +165,7 @@ object BillingCreator {
         fun getDelta(iotype: Int, amount: Long) = if (iotype == 0) amount else -amount
         walletCreator.modifyWalletAmount(
             context,
-            originalBillingDao!!.wallet,
+            originalBillingDao.wallet,
             getDelta(originalBillingDao.iotype, originalBillingDao.amount)
         )
         walletCreator.modifyWalletAmount(
@@ -206,7 +206,7 @@ object BillingCreator {
             val billingRecord = billingDao.getRecordById(billingId)
 
             // 检查ID是否存在
-            if (billingRecord == null) {
+            if (billingRecord.id == -1L) {
                 result = Pair(
                     MODIFY_BILLING_DEPOSIT_PAY_DATE_CHECK_FAILED,
                     MODIFY_BILLING_DEPOSIT_PAY_DATE_ID_FAILED.toLong()
@@ -237,7 +237,7 @@ object BillingCreator {
             val consumptionRecord = billingDao.getRecordById(consumptionId)
 
             // 检查消费账单ID是否存在
-            if (consumptionRecord == null) {
+            if (consumptionRecord.id == -1L) {
                 result = Pair(
                     MODIFY_BILLING_DEPOSIT_PAY_DATE_CHECK_FAILED,
                     MODIFY_BILLING_DEPOSIT_PAY_DATE_CONSUMPTION_ID_FAILED.toLong()
@@ -290,7 +290,7 @@ object BillingCreator {
                           context: Context) : Boolean {
         val billingDao = BillingDao(context)
         return try {
-            val recordToDelete = billingDao.getRecordById(id) ?: return false.also { billingDao.close() }
+            val recordToDelete = billingDao.getRecordById(id)
 
             WalletCreator.modifyWalletAmount(
                 context,
@@ -320,7 +320,7 @@ object BillingCreator {
     }
 
     // 推荐异步使用此方法
-    fun getRecordById(recordId: Long, context: Context): BillingDao.Record? {
+    fun getRecordById(recordId: Long, context: Context): BillingDao.Record {
         val billingDao = BillingDao(context)
         val record = billingDao.getRecordById(recordId)
         billingDao.close()

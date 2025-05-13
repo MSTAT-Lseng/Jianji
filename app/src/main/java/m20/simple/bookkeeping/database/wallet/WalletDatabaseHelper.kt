@@ -8,8 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 import m20.simple.bookkeeping.R
 
-
-class WalletDatabaseHelper(context: Context?, private val resources: Resources) :
+class WalletDatabaseHelper(context: Context, private val resources: Resources) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     companion object {
@@ -50,10 +49,7 @@ class WalletDatabaseHelper(context: Context?, private val resources: Resources) 
         values.put(COLUMN_NAME, resources.getString(R.string.db_default_wallet))
         values.put(COLUMN_BALANCE, 0)
 
-        val newRowId = db.insert(TABLE_WALLET, null, values)
-        if (newRowId == -1L) {
-            Log.e(TAG, "Failed to add default wallet.")
-        }
+        db.insert(TABLE_WALLET, null, values)
     }
 
 }

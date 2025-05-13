@@ -109,4 +109,6 @@
     <string name="set_default_wallet">设为默认钱包</string>
     <string name="options">选项</string>
     <string name="add_wallet">添加钱包</string>
+    <string name="nav_title">%s %s</string>
+    <string name="billing_not_found">没有找到账单信息</string>
 </resources>

@@ -48,13 +48,13 @@ class WalletManageActivity : AppCompatActivity() {
             MaterialAlertDialogBuilder(this)
                 .setTitle("输入信息")
                 .setView(inputLayout)
-                .setPositiveButton(getString(android.R.string.ok)) { dialog, which ->
+                .setPositiveButton(getString(android.R.string.ok)) { _, _ ->
                     // 获取用户输入的内容
                     val userInput = inputEditText.text.toString()
                     // 在这里处理用户输入的内容，例如显示一个 Toast
                     Toast.makeText(this, "您输入了: $userInput", Toast.LENGTH_SHORT).show()
                 }
-                .setNegativeButton(getString(android.R.string.cancel)) { dialog, which ->
+                .setNegativeButton(getString(android.R.string.cancel)) { dialog, _ ->
                     dialog.cancel()
                 }
                 .show()
@@ -126,7 +126,7 @@ class WalletManageActivity : AppCompatActivity() {
                 walletCreator.getAllWallets(this@WalletManageActivity)
             }
             val defaultWallet = withContext(Dispatchers.IO) {
-                walletCreator.getDefaultWallet(this@WalletManageActivity)?.first
+                walletCreator.getDefaultWallet(this@WalletManageActivity, resources).first
             }
             val amountList = withContext(Dispatchers.IO) {
                 walletList.map { (id, _) ->

@@ -42,15 +42,14 @@ import java.util.Locale
 
 class BillingInfoActivity : AppCompatActivity() {
 
-    private var defaultBillId = -1L
-    private var billId : Long = defaultBillId
+    private var billId : Long = -1L
     private var depositStatus: String = "notSet"
     private var billCoroutineScope : Job? = null
     private var topBar : MaterialToolbar? = null
     private var modified : Boolean = false
 
     companion object {
-        val modifiedBillKeys = "isModified"
+        const val modifiedBillKeys = "isModified"
     }
 
     private val launcher = registerForActivityResult(StartActivityForResult()) { result ->
@@ -70,7 +69,7 @@ class BillingInfoActivity : AppCompatActivity() {
 
         UIUtils().setStatusBarTextColor(this, !UIUtils().isDarkMode(resources))
         configToolbar()
-        billId = intent.getLongExtra("billingId", defaultBillId)
+        billId = intent.getLongExtra("billingId", billId)
         modified = intent.getBooleanExtra("modified", modified)
         if (checkBillingID()) {
             loadBillingInfo()
@@ -89,7 +88,7 @@ class BillingInfoActivity : AppCompatActivity() {
     private fun configToolbar() {
         topBar = findViewById(R.id.topAppBar)
         setSupportActionBar(topBar)
-        topBar?.setNavigationOnClickListener { v ->
+        topBar?.setNavigationOnClickListener {
             onBackPressed()
         }
     }
@@ -172,7 +171,19 @@ class BillingInfoActivity : AppCompatActivity() {
             val record = withContext(Dispatchers.IO) {
                 BillingCreator.getRecordById(billId, this@BillingInfoActivity)
             }
-            val ioType = record?.iotype
+
+            // 空值检查
+            if (record.id == -1L) {
+                Toast.makeText(
+                    this@BillingInfoActivity,
+                    getString(R.string.billing_not_found),
+                    Toast.LENGTH_SHORT
+                ).show()
+                finish()
+                return@launch
+            }
+
+            val ioType = record.iotype
 
             val colorRes = if (ioType == 0) R.color.iotype_expenditure else R.color.iotype_income
             val color = ContextCompat.getColor(this@BillingInfoActivity, colorRes)
@@ -180,7 +191,7 @@ class BillingInfoActivity : AppCompatActivity() {
             // Amount
             ioTypeText.text = if (ioType == 0) "-" else "+"
             ioTypeText.contentDescription = if (ioType == 0) getString(R.string.expenditure) else getString(R.string.income)
-            amountText.text = if (record?.amount == 0L) "0.00" else WalletCreator.convertAmountFormat(record?.amount.toString())
+            amountText.text = WalletCreator.convertAmountFormat(record.amount.toString())
 
             // Amount color
             amountText.setTextColor(color)
@@ -188,15 +199,15 @@ class BillingInfoActivity : AppCompatActivity() {
 
             // classify
             classifyImageView.setImageResource(
-                categoryPairs.find { it.second == record?.classify }?.first ?: R.drawable.account_balance_wallet_thin
+                categoryPairs.find { it.second == record.classify }?.first ?: R.drawable.account_balance_wallet_thin
             )
             classifyImageView.contentDescription = categories
-                .find { it.first == record?.classify }?.second ?: getString(R.string.classify_icon)
+                .find { it.first == record.classify }?.second ?: getString(R.string.classify_icon)
 
 
             // Deposit Status
-            depositStatus = record?.deposit ?: depositStatus
-            depositStatusText.text = when (record?.deposit) {
+            depositStatus = record.deposit
+            depositStatusText.text = when (record.deposit) {
                 "true" -> getString(R.string.deposit_pay)
                 "false" -> getString(R.string.realtime_pay)
                 "consumption" -> getString(R.string.deposit_consumption)
@@ -206,15 +217,15 @@ class BillingInfoActivity : AppCompatActivity() {
 
             // Wallet
             val walletName = withContext(Dispatchers.IO) {
-                WalletCreator.getWalletNameAndBalance(this@BillingInfoActivity, record?.wallet!!)!!.first
+                WalletCreator.getWalletNameAndBalance(this@BillingInfoActivity, record.wallet)!!.first
             }
             listContainer.addView(getBillingItemView(R.drawable.account_balance_wallet_300,
                 resources.getString(R.string.wallet),
-                walletName!!))
+                walletName))
 
             // Time
             val sdf = SimpleDateFormat("yyyy/MM/dd\nHH:mm", Locale.getDefault())
-            val date = Date(record!!.time)
+            val date = Date(record.time)
 
             listContainer.addView(getBillingItemView(R.drawable.schedule,
                 resources.getString(R.string.bill_time),
@@ -340,7 +351,7 @@ class BillingInfoActivity : AppCompatActivity() {
             .setMessage(
                 billingCreator.getCreateBillingFailedReason(result.second.toInt(), resources)
             )
-            .setPositiveButton(resources.getString(android.R.string.ok)) { dialog, which ->
+            .setPositiveButton(resources.getString(android.R.string.ok)) { dialog, _ ->
                 dialog.dismiss()
             }
             .show()

@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
 
 class WalletDao(context: Context) {
@@ -14,6 +15,10 @@ class WalletDao(context: Context) {
 
     // 添加一个钱包
     fun addWallet(name: String, balance: Long = 0): Int {
+        // Error check
+        if (name.isEmpty()) return -1
+        if (isWalletNameExists(name)) return -2
+
         val db = dbHelper.writableDatabase
         val values = ContentValues().apply {
             put(WalletDatabaseHelper.COLUMN_NAME, name)
@@ -61,8 +66,9 @@ class WalletDao(context: Context) {
     }
 
     // 根据ID查看钱包名称和余额
-    fun getWalletNameAndBalance(walletId: Int): Pair<String?, Long?>? {
+    fun getWalletNameAndBalance(walletId: Int): Pair<String, Long> {
         val db = dbHelper.readableDatabase
+        val closeDB = fun(db: SQLiteDatabase) { db.takeIf { closeDatabase }?.close() }
         val projection = arrayOf(
             WalletDatabaseHelper.COLUMN_NAME,
             WalletDatabaseHelper.COLUMN_BALANCE
@@ -79,20 +85,20 @@ class WalletDao(context: Context) {
             null
         )
 
-        var name: String? = null
-        var balance: Long? = null
         cursor.use {
             if (it.moveToFirst()) {
-                name = it.getString(it.getColumnIndexOrThrow(WalletDatabaseHelper.COLUMN_NAME))
-                balance = it.getLong(it.getColumnIndexOrThrow(WalletDatabaseHelper.COLUMN_BALANCE))
+                val name = it.getString(it.getColumnIndexOrThrow(WalletDatabaseHelper.COLUMN_NAME))
+                val balance = it.getLong(it.getColumnIndexOrThrow(WalletDatabaseHelper.COLUMN_BALANCE))
+                closeDB(db)
+                return Pair(name, balance)
             }
         }
-        db.takeIf { closeDatabase }?.close()
-        return if (name != null) Pair(name, balance) else null
+        closeDB(db)
+        return Pair("", 0)
     }
 
     // 根据钱包名称获取钱包ID
-    fun getWalletIdByName(walletName: String): Int? {
+    fun getWalletIdByName(walletName: String): Int {
         val db = dbHelper.readableDatabase
         val projection = arrayOf(WalletDatabaseHelper.COLUMN_ID)
         val selection = "${WalletDatabaseHelper.COLUMN_NAME} = ?"
@@ -114,26 +120,16 @@ class WalletDao(context: Context) {
             }
         }
         db.takeIf { closeDatabase }?.close()
-        return walletId
+        return walletId ?: -1
     }
 
     // 根据名称查看是否已经存在钱包
     fun isWalletNameExists(walletName: String): Boolean {
         val db = dbHelper.readableDatabase
-        val projection = arrayOf(WalletDatabaseHelper.COLUMN_ID)
-        val selection = "${WalletDatabaseHelper.COLUMN_NAME} = ?"
-        val selectionArgs = arrayOf(walletName)
-        val cursor = db.query(
-            WalletDatabaseHelper.TABLE_WALLET,
-            projection,
-            selection,
-            selectionArgs,
-            null,
-            null,
-            null
-        )
+        val sql = "SELECT 1 FROM ${WalletDatabaseHelper.TABLE_WALLET} WHERE ${WalletDatabaseHelper.COLUMN_NAME} = ?"
+        val cursor = db.rawQuery(sql, arrayOf(walletName))
 
-        val exists = cursor.count > 0
+        val exists = cursor.moveToFirst()
         cursor.close()
         db.takeIf { closeDatabase }?.close()
         return exists

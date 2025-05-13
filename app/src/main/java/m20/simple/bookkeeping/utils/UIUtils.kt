@@ -1,5 +1,6 @@
 package m20.simple.bookkeeping.utils
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.res.Configuration
@@ -10,6 +11,7 @@ import m20.simple.bookkeeping.R
 
 class UIUtils {
 
+    @SuppressLint("DiscouragedApi", "InternalInsetResource")
     fun getStatusBarHeight(context: Context): Int {
         val resourceId = context.resources.getIdentifier("status_bar_height", "dimen", "android")
         return if (resourceId > 0) {

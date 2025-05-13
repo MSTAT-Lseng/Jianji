@@ -148,12 +148,11 @@ class HomeFragment : Fragment() {
 
                 // Amount
                 val amountTextView = findViewById<TextView>(R.id.amount_text)
-                val zeroAmount = "0.00"
-                val (amount, amountAccessibility) = record.amount.takeIf { it != 0L }?.let { value ->
+                val (amount, amountAccessibility) = record.amount.let { value ->
                     val convertedTrue = WalletCreator.convertAmountFormat(value.toString(), true, record.iotype)
                     val convertedFalse = WalletCreator.convertAmountFormat(value.toString(), false, record.iotype)
                     convertedTrue to convertedFalse
-                } ?: (zeroAmount to zeroAmount)
+                }
                 val amountColor = resources.getColor(
                     if (record.iotype == 0) R.color.iotype_expenditure
                     else R.color.iotype_income
