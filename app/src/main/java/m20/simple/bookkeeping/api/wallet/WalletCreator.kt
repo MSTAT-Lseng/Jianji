@@ -2,7 +2,9 @@ package m20.simple.bookkeeping.api.wallet
 
 import android.content.Context
 import android.content.res.Resources
+import m20.simple.bookkeeping.api.billing.BillingCreator
 import m20.simple.bookkeeping.config.PrefsConfig
+import m20.simple.bookkeeping.database.billing.BillingDao
 import m20.simple.bookkeeping.database.wallet.WalletDao
 
 object WalletCreator {
@@ -60,6 +62,11 @@ object WalletCreator {
     // 更改钱包名称，传入ID
     fun renameWallet(context: Context, walletID: Int, newName: String): Boolean {
         val walletDao = WalletDao(context)
+
+        // 检查
+        if (newName.isEmpty()) return false
+        if (walletDao.isWalletNameExists(newName)) return false
+
         return walletDao.updateWalletName(walletID, newName) > 0
     }
 
@@ -84,6 +91,23 @@ object WalletCreator {
     fun createWallet(context: Context, walletName: String): Int {
         val walletDao = WalletDao(context)
         return walletDao.addWallet(walletName, 0)
+    }
+
+    // 删除钱包，传入ID
+    fun deleteWallet(context: Context, walletID: Int, transferBalance: Boolean = true): Boolean {
+        val walletDao = WalletDao(context)
+        val defaultWalletId = getDefaultWallet(context, context.resources).first
+
+        // 转移账单记录
+        BillingCreator.transferRecordWallet(walletID, defaultWalletId, context)
+
+        if (transferBalance) {
+            val (_, balance) = walletDao.getWalletNameAndBalance(walletID)
+            val (_, defaultBalance) = walletDao.getWalletNameAndBalance(defaultWalletId)
+            walletDao.updateWalletBalance(defaultWalletId, defaultBalance + balance)
+        }
+
+        return walletDao.deleteWallet(walletID) > 0
     }
 
     // 转换钱包余额至合理格式

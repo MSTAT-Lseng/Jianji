@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.view.MenuItem
+import android.view.View
+import android.widget.AdapterView
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.ImageView
@@ -508,25 +510,26 @@ class CreateBillingActivity : AppCompatActivity() {
     private fun configWalletSelector() {
         val walletInputText: MaterialAutoCompleteTextView = findViewById(R.id.wallet_input_text)
 
-        fun checkEdit(allWallets: List<Pair<Int, String>>) {
+        fun checkEdit(defaultWalletID: Int) {
             if (!isEditBilling!!) {
+                billingObject.wallet = defaultWalletID
+                walletInputText.hint = getString(R.string.choose_wallet)
                 return
             }
-            allWallets.find { it.first == billingObject.wallet }?.let {
-                walletInputText.setText(it.second)
-            }
+            walletInputText.hint = getString(R.string.wallet_selector_default)
         }
 
         fun updateUi(allWallets: List<Pair<Int, String>>, defaultWalletID: Int) {
             val wallets = allWallets.map { it.second }.toTypedArray()
-            val defaultWallet = allWallets.find { it.first == defaultWalletID }
-                ?: allWallets.firstOrNull() ?: return
-
-            billingObject.wallet = defaultWallet.first
+            val walletIds = allWallets.map { it.first }.toTypedArray()
             walletInputText.setSimpleItems(wallets)
-            walletInputText.setText(defaultWallet.second)
 
-            checkEdit(allWallets)
+            walletInputText.setOnItemClickListener { parent, view, position, id ->
+                val selectedItem: Int = walletIds[position]
+                billingObject.wallet = selectedItem
+            }
+
+            checkEdit(defaultWalletID)
         }
 
         walletExecutorService.execute {

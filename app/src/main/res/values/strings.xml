@@ -110,4 +110,14 @@
     <string name="add_wallet">Add a wallet</string>
     <string name="nav_title">%s %s</string>
     <string name="billing_not_found">No billing information found</string>
+    <string name="change_wallet_balance">Change Balance</string>
+    <string name="wallet_name_empty">Wallet name cannot be empty</string>
+    <string name="wallet_name_exists">The wallet name already exists</string>
+    <string name="add_wallet_success">Add wallet successfully</string>
+    <string name="add_wallet_hint">Please enter a wallet name</string>
+    <string name="wallet_selector_default">(Default unchanged)</string>
+    <string name="input_new_name">Enter New Name</string>
+    <string name="rename_wallet_success">Changed wallet name successfully</string>
+    <string name="input_new_balance">Enter balance (negative numbers supported)</string>
+    <string name="invalid_balance">Wrong amount, please re-enter</string>
 </resources>

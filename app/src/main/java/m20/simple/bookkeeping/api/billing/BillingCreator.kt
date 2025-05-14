@@ -327,6 +327,14 @@ object BillingCreator {
         return record
     }
 
+    // 推荐异步使用此方法
+    fun transferRecordWallet(oldWallet: Int, newWallet: Int, context: Context) : Int {
+        val billingDao = BillingDao(context)
+        val result = billingDao.transferRecordWallet(oldWallet, newWallet)
+        billingDao.close()
+        return result
+    }
+
     fun getCreateBillingFailedReason(reason: Int, resources: Resources): String {
         val billingFailureReasons = mapOf(
             CREATE_BILLING_TIME_CHECK_FAILED to R.string.create_billing_time_check_failed,

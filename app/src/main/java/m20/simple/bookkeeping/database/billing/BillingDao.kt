@@ -295,6 +295,21 @@ class BillingDao(context: Context) {
     }
 
     /**
+     * 转移账单记录到新的钱包
+     * @param oldWallet 原钱包 ID
+     * @param newWallet 新钱包 ID
+     * @return 受影响的行数
+     */
+    fun transferRecordWallet(oldWallet: Int, newWallet: Int): Int {
+        val values = ContentValues().apply {
+            put(BillingDatabaseHelper.COLUMN_WALLET, newWallet)
+        }
+        val selection = "${BillingDatabaseHelper.COLUMN_WALLET} = ?"
+        val selectionArgs = arrayOf(oldWallet.toString())
+        return writableDatabase.update(BillingDatabaseHelper.TABLE_NAME, values, selection, selectionArgs)
+    }
+
+    /**
      * 将 Cursor 对象转换为 Record 对象
      */
     private fun cursorToRecord(cursor: Cursor): Record {

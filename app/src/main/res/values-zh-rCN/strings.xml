@@ -111,4 +111,14 @@
     <string name="add_wallet">添加钱包</string>
     <string name="nav_title">%s %s</string>
     <string name="billing_not_found">没有找到账单信息</string>
+    <string name="change_wallet_balance">更改余额</string>
+    <string name="wallet_name_empty">钱包名称不能为空</string>
+    <string name="wallet_name_exists">钱包名称已经存在</string>
+    <string name="add_wallet_success">添加钱包成功</string>
+    <string name="add_wallet_hint">请输入钱包名称</string>
+    <string name="wallet_selector_default">（默认未更改）</string>
+    <string name="input_new_name">输入新名称</string>
+    <string name="rename_wallet_success">更改钱包名称成功</string>
+    <string name="input_new_balance">输入余额（支持负数）</string>
+    <string name="invalid_balance">错误的金额数值，请重新输入</string>
 </resources>
