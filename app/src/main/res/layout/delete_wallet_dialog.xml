@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingLeft="24dp"
+        android:paddingRight="24dp"
+        android:paddingBottom="8dp"
+        android:paddingTop="16dp"
+        android:text="@string/delete_wallet_message"
+        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"/>
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/transfer_balance_checkbox"
+        android:text="@string/transfer_balance_checkbox"
+        android:textAppearance="@style/TextAppearance.Material3.BodyMedium"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="24dp"
+        android:checked="true" />
+
+</LinearLayout>

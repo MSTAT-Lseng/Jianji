@@ -6,6 +6,7 @@ import m20.simple.bookkeeping.api.billing.BillingCreator
 import m20.simple.bookkeeping.config.PrefsConfig
 import m20.simple.bookkeeping.database.billing.BillingDao
 import m20.simple.bookkeeping.database.wallet.WalletDao
+import java.math.RoundingMode
 
 object WalletCreator {
 
@@ -70,12 +71,18 @@ object WalletCreator {
         return walletDao.updateWalletName(walletID, newName) > 0
     }
 
-    // 修改钱包余额，传入：钱包ID、修改数值，返回受影响的行数，建议使用异步执行函数
+    // 修改钱包余额，传入：钱包ID、修改数值，返回修改结果，建议使用异步执行函数
     fun modifyWalletAmount(context: Context, walletID: Int, amount: Long): Boolean {
         val walletDao = WalletDao(context)
         val (_, balance) = walletDao.getWalletNameAndBalance(walletID)
         val newAmount = (balance) + amount
         return walletDao.updateWalletBalance(walletID, newAmount) > 0
+    }
+
+    // 更改钱包余额为全新数值，传入：钱包ID、修改数值，返回修改结果，建议使用异步执行函数
+    fun setWalletAmount(context: Context, walletID: Int, amount: Long): Boolean {
+        val walletDao = WalletDao(context)
+        return walletDao.updateWalletBalance(walletID, amount) > 0
     }
 
     // 根据ID查看钱包名称和余额
@@ -132,6 +139,18 @@ object WalletCreator {
         val afterDecimal = originAmount.substring(length - 2)
 
         return formatWithSymbol("$beforeDecimal.$afterDecimal")
+    }
+
+    /**
+     * 将原始的数值转换为符合余额格式的数值
+     *
+     * @param value 用户传入的字符串类型原始数值。
+     * @return 处理后的 Long 值，如果输入无效则可能抛出 NumberFormatException。
+     */
+    fun convertNumberToAmount(value: String): Long? {
+        val original = value.toBigDecimalOrNull() ?: return null
+        val rounded = original.setScale(2, RoundingMode.HALF_UP)
+        return rounded.toPlainString().replace(".", "").toLong()
     }
 
 }

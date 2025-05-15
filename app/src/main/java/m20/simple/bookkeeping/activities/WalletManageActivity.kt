@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.widget.CheckBox
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
@@ -55,7 +56,7 @@ class WalletManageActivity : AppCompatActivity() {
                 getString(R.string.change_wallet_balance),
                 getString(R.string.input_new_balance),
                 fun(balance: String) {
-                    val balanceNumber = balance.toLongOrNull()
+                    val balanceNumber = WalletCreator.convertNumberToAmount(balance)
                     if (balanceNumber == null) {
                         Toast.makeText(
                             this@WalletManageActivity,
@@ -64,8 +65,17 @@ class WalletManageActivity : AppCompatActivity() {
                         ).show()
                         return
                     }
+                    // change balance
+                    taskChangeWalletBalance(
+                        walletListItem.walletId,
+                        balanceNumber
+                    )
                 }
             )
+        }
+
+        fun setDefault() {
+            setDefaultWallet(walletListItem.walletId)
         }
 
         val MENU_ITEM_RENAME = 1
@@ -87,6 +97,8 @@ class WalletManageActivity : AppCompatActivity() {
             when (id) {
                 MENU_ITEM_RENAME -> rename()
                 MENU_ITEM_CHANGE_BALANCE -> changeBalance()
+                MENU_ITEM_SET_DEFAULT -> setDefault()
+                MENU_ITEM_DELETE -> showDeleteWalletDialog(walletListItem.walletId)
             }
             false
         })
@@ -165,6 +177,36 @@ class WalletManageActivity : AppCompatActivity() {
             .show()
     }
 
+    private fun showDeleteWalletDialog(walletId: Int) {
+
+        fun taskDeleteWallet(
+            walletId: Int,
+            transferBalance: Boolean
+        ) {
+            runWalletTask(
+                task = { WalletCreator.deleteWallet(this, walletId, transferBalance) },
+                successMessage = R.string.delete_wallet_success,
+                errorMessage = R.string.delete_wallet_failed
+            )
+        }
+
+        val inflater = LayoutInflater.from(this)
+        val inputLayout = inflater.inflate(R.layout.delete_wallet_dialog, null)
+        val transferBalanceCheckBox =
+            inputLayout.findViewById<CheckBox>(R.id.transfer_balance_checkbox)
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.delete_wallet)
+            .setView(inputLayout)
+            .setPositiveButton(getString(android.R.string.ok)) { _, _ ->
+                taskDeleteWallet(walletId, transferBalanceCheckBox.isChecked)
+            }
+            .setNegativeButton(getString(android.R.string.cancel)) { dialog, _ ->
+                dialog.cancel()
+            }
+            .show()
+    }
+
     private fun taskAddWallet(name: String) {
         CoroutineScope(Dispatchers.Main).launch {
             val walletCreator = WalletCreator
@@ -200,39 +242,64 @@ class WalletManageActivity : AppCompatActivity() {
         }
     }
 
+    private fun runWalletTask(
+        task: suspend () -> Boolean,
+        successMessage: Int,
+        errorMessage: Int,
+        showSuccessToast: Boolean = true,
+        onSuccess: () -> Unit = {}
+    ) {
+        CoroutineScope(Dispatchers.Main).launch {
+            val result = withContext(Dispatchers.IO) {
+                task()
+            }
+            if (result) {
+                if (showSuccessToast) {
+                    Toast.makeText(this@WalletManageActivity, successMessage, Toast.LENGTH_SHORT).show()
+                }
+                getWalletList()
+                onSuccess()
+            } else {
+                Toast.makeText(this@WalletManageActivity, errorMessage, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     private fun taskRenameWallet(
         walletId: Int,
         newName: String
     ) {
-        CoroutineScope(Dispatchers.Main).launch {
-            if (newName.isEmpty()) {
-                Toast.makeText(
-                    this@WalletManageActivity,
-                    R.string.wallet_name_empty,
-                    Toast.LENGTH_SHORT
-                ).show()
-                return@launch
-            }
-            val walletCreator = WalletCreator
-            val result = withContext(Dispatchers.IO) {
-                walletCreator.renameWallet(this@WalletManageActivity, walletId, newName)
-            }
-            if (result) {
-                Toast.makeText(
-                    this@WalletManageActivity,
-                    R.string.rename_wallet_success,
-                    Toast.LENGTH_SHORT
-                ).show()
-                getWalletList()
-                return@launch
-            }
-            Toast.makeText(
-                this@WalletManageActivity,
-                R.string.wallet_name_exists,
-                Toast.LENGTH_SHORT
-            ).show()
-
+        if (newName.isEmpty()) {
+            Toast.makeText(this, R.string.wallet_name_empty, Toast.LENGTH_SHORT).show()
+            return
         }
+
+        runWalletTask(
+            task = { WalletCreator.renameWallet(this, walletId, newName) },
+            successMessage = R.string.rename_wallet_success,
+            errorMessage = R.string.wallet_name_exists
+        )
+    }
+
+    private fun taskChangeWalletBalance(
+        walletId: Int,
+        newBalance: Long
+    ) {
+        runWalletTask(
+            task = { WalletCreator.setWalletAmount(this, walletId, newBalance) },
+            successMessage = R.string.change_wallet_balance_success,
+            errorMessage = R.string.change_wallet_balance_failed
+        )
+    }
+
+    private fun setDefaultWallet(
+        walletId: Int
+    ) {
+        runWalletTask(
+            task = { WalletCreator.setDefaultWallet(this, walletId) },
+            successMessage = R.string.set_default_wallet_success,
+            errorMessage = R.string.set_default_wallet_failed
+        )
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

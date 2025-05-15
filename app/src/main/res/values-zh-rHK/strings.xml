@@ -121,4 +121,13 @@
     <string name="rename_wallet_success">更改錢包名稱成功</string>
     <string name="input_new_balance">輸入餘額（支援負數）</string>
     <string name="invalid_balance">錯誤的金額數值，請重新輸入</string>
+    <string name="change_wallet_balance_success">修改錢包餘額成功</string>
+    <string name="change_wallet_balance_failed">修改錢包餘額出現未知錯誤</string>
+    <string name="set_default_wallet_success">設定預設錢包成功</string>
+    <string name="set_default_wallet_failed">設定預設錢包失敗</string>
+    <string name="delete_wallet_message">要刪除該錢包嗎？屬於該錢包的所有帳單都會轉入預設錢包下。</string>
+    <string name="transfer_balance_checkbox">將所剩餘額轉移到預設錢包</string>
+    <string name="delete_wallet">刪除錢包</string>
+    <string name="delete_wallet_success">刪除錢包成功</string>
+    <string name="delete_wallet_failed">刪除錢包出現未知錯誤</string>
 </resources>

@@ -242,9 +242,7 @@ class CreateBillingActivity : AppCompatActivity() {
         editText.requestFocus()
 
         fun taskAmount(amount: String) {
-            val original = amount.toBigDecimal()
-            val rounded = original.setScale(2, RoundingMode.HALF_UP)
-            billingObject.amount = rounded.toPlainString().replace(".", "").toLong()
+            billingObject.amount = WalletCreator.convertNumberToAmount(amount) ?: 0L
         }
 
         editText.doAfterTextChanged { editable ->

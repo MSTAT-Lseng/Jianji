@@ -120,4 +120,13 @@
     <string name="rename_wallet_success">Changed wallet name successfully</string>
     <string name="input_new_balance">Enter balance (negative numbers supported)</string>
     <string name="invalid_balance">Wrong amount, please re-enter</string>
+    <string name="change_wallet_balance_success">Modify wallet balance successfully</string>
+    <string name="change_wallet_balance_failed">An unknown error occurred while modifying the wallet balance</string>
+    <string name="set_default_wallet_success">Set the default wallet successfully</string>
+    <string name="set_default_wallet_failed">Failed to set default wallet</string>
+    <string name="delete_wallet_message">Do you want to delete this wallet? All bills belonging to this wallet will be transferred to the default wallet.</string>
+    <string name="transfer_balance_checkbox">Transfer remaining balance to default wallet</string>
+    <string name="delete_wallet">Deleting a wallet</string>
+    <string name="delete_wallet_success">Delete wallet successfully</string>
+    <string name="delete_wallet_failed">Unknown error occurred while deleting wallet</string>
 </resources>
