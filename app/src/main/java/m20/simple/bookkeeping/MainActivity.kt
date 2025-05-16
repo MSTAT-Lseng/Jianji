@@ -1,9 +1,11 @@
 package m20.simple.bookkeeping
 
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.drawerlayout.widget.DrawerLayout
@@ -15,7 +17,7 @@ import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
-import com.google.android.material.snackbar.Snackbar
+import m20.simple.bookkeeping.api.backup.BackupCreator
 import m20.simple.bookkeeping.databinding.ActivityMainBinding
 import m20.simple.bookkeeping.ui.home.HomeViewModel
 import m20.simple.bookkeeping.utils.PackageUtils
@@ -56,6 +58,9 @@ class MainActivity : AppCompatActivity() {
         configTopBar()
         sendToolbarMessage()
         configNavigationHeader()
+
+        val sha256Signature = BackupCreator.getAppSignature(this)
+        Log.d("sha256Signature", sha256Signature ?: "null")
 
     }
 
@@ -106,4 +111,5 @@ class MainActivity : AppCompatActivity() {
     private fun sendToolbarMessage() {
         viewModel.toolbarMessage.value = true
     }
+
 }

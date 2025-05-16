@@ -7,6 +7,14 @@ android {
     namespace = "m20.simple.bookkeeping"
     compileSdk = 35
 
+    ndkVersion = "28.1.13356709"
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "4.0.2"
+        }
+    }
+
     defaultConfig {
         applicationId = "m20.simple.bookkeeping"
         minSdk = /*24*/26
