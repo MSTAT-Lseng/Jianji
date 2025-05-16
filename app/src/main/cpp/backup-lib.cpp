@@ -2,137 +2,194 @@
 #include <cstring>
 #include <string>
 #include <vector>
+#include <sstream>
+#include <iomanip>
 
 extern "C" JNIEXPORT jstring JNICALL
-bytesToHex(JNIEnv* env,
-           jobject /* this */,
-           jbyteArray byteArray) {
+bytesToHex(JNIEnv* env, jobject /* this */, jbyteArray byteArray) {
 
-    // 获取字节数组长度
     jsize len = env->GetArrayLength(byteArray);
 
-    // 获取原始字节数组指针
     jbyte* bytes = env->GetByteArrayElements(byteArray, NULL);
     if (bytes == nullptr) {
-        return env->NewStringUTF(""); // 如果获取失败，返回空字符串
+        return nullptr; // 内存分配失败
     }
 
-    // 十六进制字符表
-    static const char hex_chars[] = "0123456789ABCDEF";
+    const char hex_chars[] = "0123456789ABCDEF";
 
-    // 分配结果字符串内存（每个字节对应两个字符 + 末尾 '\0'）
-    char* result = new char[len * 2 + 1];
+    std::vector<char> result(len * 2 + 1);
+    if (result.empty()) {
+        env->ReleaseByteArrayElements(byteArray, bytes, JNI_ABORT);
+        return nullptr;
+    }
 
-    // 转换每个字节为两个十六进制字符
     for (jsize i = 0; i < len; ++i) {
-        int v = (bytes[i] & 0xFF); // 确保无符号
-        result[i * 2] = hex_chars[v >> 4];     // 高位
-        result[i * 2 + 1] = hex_chars[v & 0x0F]; // 低位
+        int v = (static_cast<unsigned char>(bytes[i])); // 转为无符号
+        result[i * 2] = hex_chars[v >> 4];
+        result[i * 2 + 1] = hex_chars[v & 0x0F];
     }
 
-    // 添加字符串结束符
     result[len * 2] = '\0';
 
-    // 创建并返回 Java 字符串
-    jstring jResult = env->NewStringUTF(result);
+    jstring jResult = env->NewStringUTF(result.data());
 
-    // 释放资源
-    delete[] result;
-    env->ReleaseByteArrayElements(byteArray, bytes, 0);
+    env->ReleaseByteArrayElements(byteArray, bytes, JNI_ABORT);
 
     return jResult;
 }
 
+// 宏：检查并清除异常
+#define CHECK_EXCEPTION(env) \
+    if ((env)->ExceptionCheck()) { \
+        (env)->ExceptionClear(); \
+        return nullptr; \
+    }
+
 extern "C"
 JNIEXPORT jstring JNICALL
-Java_m20_simple_bookkeeping_api_backup_BackupCreator_getAppSignature(JNIEnv *env, jobject thiz,
-                                                                     jobject context,
-                                                                     jstring package_name,
-                                                                     jstring algorithm) {
-    // 获取当前 Android 版本
+Java_m20_simple_bookkeeping_api_backup_BackupCreator_getAppSignature(
+        JNIEnv *env,
+        jobject thiz,
+        jobject context,
+        jstring package_name,
+        jstring algorithm
+        ) {
+
+    (void)thiz; // 未使用参数
+
     jclass contextClass = env->GetObjectClass(context);
+    CHECK_EXCEPTION(env);
+
+    // 获取 Build.VERSION.SDK_INT
     jclass buildVersionClass = env->FindClass("android/os/Build$VERSION");
+    CHECK_EXCEPTION(env);
     jfieldID sdkIntField = env->GetStaticFieldID(buildVersionClass, "SDK_INT", "I");
     int sdkInt = env->GetStaticIntField(buildVersionClass, sdkIntField);
+    env->DeleteLocalRef(buildVersionClass);
+    CHECK_EXCEPTION(env);
 
     // 获取 PackageManager
-    jmethodID getPackageManagerMid = env->GetMethodID(contextClass, "getPackageManager", "()Landroid/content/pm/PackageManager;");
+    jmethodID getPackageManagerMid = env->GetMethodID(
+            contextClass,
+            "getPackageManager",
+            "()Landroid/content/pm/PackageManager;");
     jobject packageManager = env->CallObjectMethod(context, getPackageManagerMid);
+    env->DeleteLocalRef(contextClass);
     if (!packageManager || env->ExceptionCheck()) {
         env->ExceptionClear();
         return nullptr;
     }
 
     jclass pmClass = env->GetObjectClass(packageManager);
-    jmethodID getPackageInfoMid = env->GetMethodID(pmClass, "getPackageInfo", "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;");
+    CHECK_EXCEPTION(env);
 
-    // 确定 flags
+    // 根据 SDK 版本选择正确的 flags
     jint flags = 0;
     if (sdkInt >= 28) {
-        jfieldID getSigningCertificatesFid = env->GetStaticFieldID(pmClass, "GET_SIGNING_CERTIFICATES", "I");
-        flags = env->GetStaticIntField(pmClass, getSigningCertificatesFid);
+        jfieldID signingCertificatesFid = env->GetStaticFieldID(
+                pmClass,
+                "GET_SIGNING_CERTIFICATES",
+                "I");
+        if (!signingCertificatesFid) {
+            env->DeleteLocalRef(pmClass);
+            return nullptr;
+        }
+        flags = env->GetStaticIntField(pmClass, signingCertificatesFid);
     } else {
-        jclass packageManagerInterfaceClass = env->FindClass("android/content/pm/PackageManager");
-        if (packageManagerInterfaceClass == nullptr) {
-            if (env->ExceptionCheck()) {
-                env->ExceptionClear();
-            }
+        jclass pmInterfaceClass = env->FindClass("android/content/pm/PackageManager");
+        if (!pmInterfaceClass) {
+            env->DeleteLocalRef(pmClass);
             return nullptr;
         }
-        jfieldID getSignaturesFid = env->GetStaticFieldID(packageManagerInterfaceClass, "GET_SIGNATURES", "I");
-        if (getSignaturesFid == nullptr) {
-            env->DeleteLocalRef(packageManagerInterfaceClass);
-            if (env->ExceptionCheck()) {
-                env->ExceptionClear();
-            }
+        jfieldID signaturesFid = env->GetStaticFieldID(pmInterfaceClass,
+                                                       "GET_SIGNATURES", "I");
+        if (!signaturesFid) {
+            env->DeleteLocalRef(pmInterfaceClass);
+            env->DeleteLocalRef(pmClass);
             return nullptr;
         }
-        flags = env->GetStaticIntField(packageManagerInterfaceClass, getSignaturesFid);
-        if (env->ExceptionCheck()) {
-            env->ExceptionClear();
-            env->DeleteLocalRef(packageManagerInterfaceClass);
-            return nullptr;
-        }
-        env->DeleteLocalRef(packageManagerInterfaceClass);
+        flags = env->GetStaticIntField(pmInterfaceClass, signaturesFid);
+        env->DeleteLocalRef(pmInterfaceClass);
     }
 
-    jobject packageInfo = env->CallObjectMethod(packageManager, getPackageInfoMid, package_name, flags);
+    jmethodID getPackageInfoMid = env->GetMethodID(
+            pmClass,
+            "getPackageInfo",
+            "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;");
+    jobject packageInfo = env->CallObjectMethod(
+            packageManager,
+            getPackageInfoMid,
+            package_name,
+            flags);
+    env->DeleteLocalRef(pmClass);
     if (!packageInfo || env->ExceptionCheck()) {
         env->ExceptionClear();
         return nullptr;
     }
 
     jclass packageInfoClass = env->GetObjectClass(packageInfo);
+    CHECK_EXCEPTION(env);
+
     jobjectArray signersArray = nullptr;
 
     if (sdkInt >= 28) {
         jclass signingInfoClass = env->FindClass("android/content/pm/SigningInfo");
-        jobject singingInfo = env->GetObjectField(packageInfo, env->GetFieldID(packageInfoClass, "signingInfo", "Landroid/content/pm/SigningInfo;"));
-        jmethodID getApkContentsSignersMid = env->GetMethodID(signingInfoClass, "getApkContentsSigners", "()[Landroid/content/pm/Signature;");
-        signersArray = (jobjectArray) env->CallObjectMethod(singingInfo, getApkContentsSignersMid);
+        jfieldID signingInfoField = env->GetFieldID(
+                packageInfoClass,
+                "signingInfo",
+                "Landroid/content/pm/SigningInfo;");
+        jobject signingInfo = env->GetObjectField(
+                packageInfo,
+                signingInfoField);
+        jmethodID getApkContentsSignersMid = env->GetMethodID(
+                signingInfoClass,
+                "getApkContentsSigners",
+                "()[Landroid/content/pm/Signature;");
+        signersArray = (jobjectArray)env->CallObjectMethod(
+                signingInfo,
+                getApkContentsSignersMid);
+        env->DeleteLocalRef(signingInfoClass);
     } else {
-        jfieldID signaturesFid = env->GetFieldID(packageInfoClass, "signatures", "[Landroid/content/pm/Signature;");
-        signersArray = (jobjectArray) env->GetObjectField(packageInfo, signaturesFid);
+        jfieldID signaturesField = env->GetFieldID(
+                packageInfoClass,
+                "signatures",
+                "[Landroid/content/pm/Signature;");
+        signersArray = (jobjectArray)env->GetObjectField(
+                packageInfo,
+                signaturesField);
     }
 
+    env->DeleteLocalRef(packageInfoClass);
     if (!signersArray || env->GetArrayLength(signersArray) == 0) {
         return nullptr;
     }
 
     jobject firstSigner = env->GetObjectArrayElement(signersArray, 0);
     jclass signatureClass = env->GetObjectClass(firstSigner);
-    jmethodID toByteArrayMid = env->GetMethodID(signatureClass, "toByteArray", "()[B");
-    jbyteArray signatureBytes = (jbyteArray) env->CallObjectMethod(firstSigner, toByteArrayMid);
+    jmethodID toByteArrayMid = env->GetMethodID(
+            signatureClass,
+            "toByteArray",
+            "()[B");
+    jbyteArray signatureBytes = (jbyteArray)env->CallObjectMethod(
+            firstSigner,
+            toByteArrayMid);
+    env->DeleteLocalRef(signatureClass);
     if (!signatureBytes || env->ExceptionCheck()) {
         env->ExceptionClear();
         return nullptr;
     }
 
-    // 获取 MessageDigest
+    // 使用 MessageDigest 计算摘要
     jclass mdClass = env->FindClass("java/security/MessageDigest");
-    jmethodID getInstanceMid = env->GetStaticMethodID(mdClass, "getInstance", "(Ljava/lang/String;)Ljava/security/MessageDigest;");
+    jmethodID getInstanceMid = env->GetStaticMethodID(
+            mdClass,
+            "getInstance",
+            "(Ljava/lang/String;)Ljava/security/MessageDigest;");
     jstring algo = algorithm ? algorithm : env->NewStringUTF("SHA-256");
-    jobject messageDigest = env->CallStaticObjectMethod(mdClass, getInstanceMid, algo);
+    jobject messageDigest = env->CallStaticObjectMethod(
+            mdClass,
+            getInstanceMid,
+            algo);
     if (!messageDigest || env->ExceptionCheck()) {
         env->ExceptionClear();
         return nullptr;
@@ -142,14 +199,21 @@ Java_m20_simple_bookkeeping_api_backup_BackupCreator_getAppSignature(JNIEnv *env
     env->CallVoidMethod(messageDigest, updateMid, signatureBytes);
 
     jmethodID digestMid = env->GetMethodID(mdClass, "digest", "()[B");
-    jbyteArray digestArray = (jbyteArray) env->CallObjectMethod(messageDigest, digestMid);
+    jbyteArray digestArray = (jbyteArray)env->CallObjectMethod(
+            messageDigest,
+            digestMid);
     if (!digestArray || env->ExceptionCheck()) {
         env->ExceptionClear();
         return nullptr;
     }
 
-    // 调用 bytesToHex
+    // 转换为十六进制字符串
     jstring hexString = bytesToHex(env, nullptr, digestArray);
+
+    // 清理局部引用
+    env->DeleteLocalRef(digestArray);
+    env->DeleteLocalRef(messageDigest);
+    env->DeleteLocalRef(mdClass);
 
     return hexString;
 }
