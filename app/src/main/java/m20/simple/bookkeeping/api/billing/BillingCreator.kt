@@ -291,6 +291,9 @@ object BillingCreator {
         val billingDao = BillingDao(context)
         return try {
             val recordToDelete = billingDao.getRecordById(id)
+            if (recordToDelete.id == -1L) {
+                return false
+            }
 
             WalletCreator.modifyWalletAmount(
                 context,
@@ -298,14 +301,13 @@ object BillingCreator {
                 if (recordToDelete.iotype == 0) recordToDelete.amount else -recordToDelete.amount
             )
 
-            val depositDelete = when (recordToDelete.deposit) {
-                "true" -> billingDao.deleteRecord((id + 1)) > 0
-                "consumption" -> billingDao.deleteRecord((id - 1)) > 0
-                else -> true
+            when (recordToDelete.deposit) {
+                "true" -> billingDao.deleteRecord((id + 1))
+                "consumption" -> billingDao.deleteRecord((id - 1))
             }
 
             val recordDelete = billingDao.deleteRecord(id) > 0
-            depositDelete && recordDelete
+            recordDelete
         } finally {
             billingDao.close()
         }

@@ -48,15 +48,20 @@ class UIUtils {
                          activity: Activity,
                          thinIcon: Boolean = true): List<Pair<Int, String>> {
         val iconList = if (thinIcon) R.array.classify_icon_list_thin else R.array.classify_icon_list_regular
-        return resources.obtainTypedArray(iconList).use { icons ->
-            val categories = resources.getStringArray(R.array.classify_list_id)
-            require(icons.length() == categories.size) {
-                activity.getString(R.string.inconsistent_array_lengths)
-            }
 
-            (0 until icons.length()).map { index ->
-                icons.getResourceId(index, -1) to categories[index]
+        val typedArray = resources.obtainTypedArray(iconList)
+        val categories = resources.getStringArray(R.array.classify_list_id)
+
+        require(typedArray.length() == categories.size) {
+            activity.getString(R.string.inconsistent_array_lengths)
+        }
+
+        try {
+            return (0 until typedArray.length()).map { index ->
+                typedArray.getResourceId(index, -1) to categories[index]
             }
+        } finally {
+            typedArray.recycle()
         }
     }
 

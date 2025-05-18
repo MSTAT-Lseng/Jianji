@@ -302,8 +302,8 @@ class BillingInfoActivity : AppCompatActivity() {
         fun removeBilling() {
             MaterialAlertDialogBuilder(this)
                 .setView(R.layout.dialog_remove_billing)
-                .setNegativeButton("取消") { _, _ -> }
-                .setPositiveButton("确认") { _, _ ->
+                .setNegativeButton(getString(android.R.string.cancel)) { _, _ -> }
+                .setPositiveButton(getString(android.R.string.ok)) { _, _ ->
                     taskRemoveBilling()
                 }
                 .show()

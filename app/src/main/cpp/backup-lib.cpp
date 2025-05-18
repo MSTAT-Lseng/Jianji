@@ -69,10 +69,7 @@ Java_m20_simple_bookkeeping_api_backup_BackupCreator_getAppSignature(
     CHECK_EXCEPTION(env);
 
     // 获取 PackageManager
-    jmethodID getPackageManagerMid = env->GetMethodID(
-            contextClass,
-            "getPackageManager",
-            "()Landroid/content/pm/PackageManager;");
+    jmethodID getPackageManagerMid = env->GetMethodID(contextClass, "getPackageManager", "()Landroid/content/pm/PackageManager;");
     jobject packageManager = env->CallObjectMethod(context, getPackageManagerMid);
     env->DeleteLocalRef(contextClass);
     if (!packageManager || env->ExceptionCheck()) {
@@ -86,10 +83,7 @@ Java_m20_simple_bookkeeping_api_backup_BackupCreator_getAppSignature(
     // 根据 SDK 版本选择正确的 flags
     jint flags = 0;
     if (sdkInt >= 28) {
-        jfieldID signingCertificatesFid = env->GetStaticFieldID(
-                pmClass,
-                "GET_SIGNING_CERTIFICATES",
-                "I");
+        jfieldID signingCertificatesFid = env->GetStaticFieldID(pmClass, "GET_SIGNING_CERTIFICATES", "I");
         if (!signingCertificatesFid) {
             env->DeleteLocalRef(pmClass);
             return nullptr;
@@ -101,8 +95,7 @@ Java_m20_simple_bookkeeping_api_backup_BackupCreator_getAppSignature(
             env->DeleteLocalRef(pmClass);
             return nullptr;
         }
-        jfieldID signaturesFid = env->GetStaticFieldID(pmInterfaceClass,
-                                                       "GET_SIGNATURES", "I");
+        jfieldID signaturesFid = env->GetStaticFieldID(pmInterfaceClass,"GET_SIGNATURES", "I");
         if (!signaturesFid) {
             env->DeleteLocalRef(pmInterfaceClass);
             env->DeleteLocalRef(pmClass);
@@ -112,15 +105,8 @@ Java_m20_simple_bookkeeping_api_backup_BackupCreator_getAppSignature(
         env->DeleteLocalRef(pmInterfaceClass);
     }
 
-    jmethodID getPackageInfoMid = env->GetMethodID(
-            pmClass,
-            "getPackageInfo",
-            "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;");
-    jobject packageInfo = env->CallObjectMethod(
-            packageManager,
-            getPackageInfoMid,
-            package_name,
-            flags);
+    jmethodID getPackageInfoMid = env->GetMethodID(pmClass, "getPackageInfo", "(Ljava/lang/String;I)Landroid/content/pm/PackageInfo;");
+    jobject packageInfo = env->CallObjectMethod(packageManager, getPackageInfoMid, package_name, flags);
     env->DeleteLocalRef(pmClass);
     if (!packageInfo || env->ExceptionCheck()) {
         env->ExceptionClear();
@@ -134,29 +120,14 @@ Java_m20_simple_bookkeeping_api_backup_BackupCreator_getAppSignature(
 
     if (sdkInt >= 28) {
         jclass signingInfoClass = env->FindClass("android/content/pm/SigningInfo");
-        jfieldID signingInfoField = env->GetFieldID(
-                packageInfoClass,
-                "signingInfo",
-                "Landroid/content/pm/SigningInfo;");
-        jobject signingInfo = env->GetObjectField(
-                packageInfo,
-                signingInfoField);
-        jmethodID getApkContentsSignersMid = env->GetMethodID(
-                signingInfoClass,
-                "getApkContentsSigners",
-                "()[Landroid/content/pm/Signature;");
-        signersArray = (jobjectArray)env->CallObjectMethod(
-                signingInfo,
-                getApkContentsSignersMid);
+        jfieldID signingInfoField = env->GetFieldID(packageInfoClass, "signingInfo", "Landroid/content/pm/SigningInfo;");
+        jobject signingInfo = env->GetObjectField(packageInfo, signingInfoField);
+        jmethodID getApkContentsSignersMid = env->GetMethodID(signingInfoClass, "getApkContentsSigners", "()[Landroid/content/pm/Signature;");
+        signersArray = (jobjectArray)env->CallObjectMethod(signingInfo, getApkContentsSignersMid);
         env->DeleteLocalRef(signingInfoClass);
     } else {
-        jfieldID signaturesField = env->GetFieldID(
-                packageInfoClass,
-                "signatures",
-                "[Landroid/content/pm/Signature;");
-        signersArray = (jobjectArray)env->GetObjectField(
-                packageInfo,
-                signaturesField);
+        jfieldID signaturesField = env->GetFieldID(packageInfoClass, "signatures", "[Landroid/content/pm/Signature;");
+        signersArray = (jobjectArray)env->GetObjectField(packageInfo, signaturesField);
     }
 
     env->DeleteLocalRef(packageInfoClass);
@@ -166,13 +137,8 @@ Java_m20_simple_bookkeeping_api_backup_BackupCreator_getAppSignature(
 
     jobject firstSigner = env->GetObjectArrayElement(signersArray, 0);
     jclass signatureClass = env->GetObjectClass(firstSigner);
-    jmethodID toByteArrayMid = env->GetMethodID(
-            signatureClass,
-            "toByteArray",
-            "()[B");
-    jbyteArray signatureBytes = (jbyteArray)env->CallObjectMethod(
-            firstSigner,
-            toByteArrayMid);
+    jmethodID toByteArrayMid = env->GetMethodID(signatureClass, "toByteArray", "()[B");
+    auto signatureBytes = (jbyteArray)env->CallObjectMethod(firstSigner, toByteArrayMid);
     env->DeleteLocalRef(signatureClass);
     if (!signatureBytes || env->ExceptionCheck()) {
         env->ExceptionClear();
@@ -181,15 +147,9 @@ Java_m20_simple_bookkeeping_api_backup_BackupCreator_getAppSignature(
 
     // 使用 MessageDigest 计算摘要
     jclass mdClass = env->FindClass("java/security/MessageDigest");
-    jmethodID getInstanceMid = env->GetStaticMethodID(
-            mdClass,
-            "getInstance",
-            "(Ljava/lang/String;)Ljava/security/MessageDigest;");
+    jmethodID getInstanceMid = env->GetStaticMethodID(mdClass, "getInstance", "(Ljava/lang/String;)Ljava/security/MessageDigest;");
     jstring algo = algorithm ? algorithm : env->NewStringUTF("SHA-256");
-    jobject messageDigest = env->CallStaticObjectMethod(
-            mdClass,
-            getInstanceMid,
-            algo);
+    jobject messageDigest = env->CallStaticObjectMethod(mdClass, getInstanceMid, algo);
     if (!messageDigest || env->ExceptionCheck()) {
         env->ExceptionClear();
         return nullptr;
@@ -199,9 +159,7 @@ Java_m20_simple_bookkeeping_api_backup_BackupCreator_getAppSignature(
     env->CallVoidMethod(messageDigest, updateMid, signatureBytes);
 
     jmethodID digestMid = env->GetMethodID(mdClass, "digest", "()[B");
-    jbyteArray digestArray = (jbyteArray)env->CallObjectMethod(
-            messageDigest,
-            digestMid);
+    auto digestArray = (jbyteArray)env->CallObjectMethod(messageDigest, digestMid);
     if (!digestArray || env->ExceptionCheck()) {
         env->ExceptionClear();
         return nullptr;

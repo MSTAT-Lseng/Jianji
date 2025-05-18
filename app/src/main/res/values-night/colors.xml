@@ -150,4 +150,5 @@
     <color name="billing_paid_icon_colors">#33e0e0e0</color>
     <color name="default_wallet_tag_background">#1b5e20</color>
     <color name="default_wallet_tag">#81c784</color>
+    <color name="billing_item_long_click">#01579B</color>
 </resources>

@@ -45,6 +45,8 @@
             android:theme="@style/Theme.简记.NoActionBar"/>
         <activity android:name=".activities.WalletManageActivity"
             android:theme="@style/Theme.简记.NoActionBar"/>
+        <activity android:name=".activities.FavoriteBillingActivity"
+            android:theme="@style/Theme.简记.NoActionBar"/>
 
         <provider
             android:name="androidx.core.content.FileProvider"

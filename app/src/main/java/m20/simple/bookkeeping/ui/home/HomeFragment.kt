@@ -4,20 +4,24 @@ import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.content.res.Resources
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
+import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.transition.Fade
 import androidx.transition.TransitionManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
@@ -56,15 +60,17 @@ class HomeFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var loadBillingDay = 0L
-    private var loadBillingCoroutineScope : Job? = null
+    private var loadBillingCoroutineScope: Job? = null
+    private var selectedBillingList = mutableListOf<Long>()
 
-    private var selectedDateView : TextView? = null
+    private var selectedDateView: TextView? = null
 
-    private val modifiedBillingListenLauncher = registerForActivityResult(StartActivityForResult()) { result ->
-        if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
-        configCalendar()
-        loadBillingItems()
-    }
+    private val modifiedBillingListenLauncher =
+        registerForActivityResult(StartActivityForResult()) { result ->
+            if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
+            configCalendar()
+            loadBillingItems()
+        }
 
     val Int.dp: Int get() = (this * Resources.getSystem().displayMetrics.density).toInt()
 
@@ -106,6 +112,7 @@ class HomeFragment : Fragment() {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
+
                 modifiedTime < 0L -> {
                     Toast.makeText(
                         requireContext(),
@@ -113,6 +120,7 @@ class HomeFragment : Fragment() {
                         Toast.LENGTH_SHORT
                     ).show()
                 }
+
                 else -> {
                     loadBillingDay = modifiedTime
                     loadBillingItems()
@@ -130,11 +138,80 @@ class HomeFragment : Fragment() {
         }
     }
 
+    private fun deleteSelectedBillings() {
+        val dialog = MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.delete_billings))
+            .setView(R.layout.dialog_loading)
+            .setCancelable(false) // 不可取消
+            .show()
+
+        CoroutineScope(Dispatchers.Main).launch {
+            withContext(Dispatchers.IO) {
+                selectedBillingList.forEach { id ->
+                    BillingCreator.deleteBillingById(id, requireActivity())
+                }
+            }
+            dialog.dismiss()
+            loadBillingItems()
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.delete_success),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    private fun confirmDeleteBillingsDialog() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(getString(R.string.delete_billings))
+            .setMessage(getString(R.string.delete_billings_message))
+            .setNegativeButton(getString(android.R.string.cancel)) { d, _ ->
+                d.dismiss()
+            }
+            .setPositiveButton(getString(android.R.string.ok)) { d, _ ->
+                deleteSelectedBillings()
+            }
+            .show()
+    }
+
     private fun loadBillingItems() {
+        selectedBillingList.clear() // 清空选中的账单列表
+
+        configToolbarTitle(getString(R.string.menu_home))
+        configFloatingActionIcon()
 
         fun addRecord(record: BillingDao.Record, allWallets: List<Pair<Int, String>>) {
             val billingItemView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.billing_item, binding.billingItemContainer, false)
+
+            val defaultBackground by lazy {
+                val typedValue = TypedValue()
+                requireContext().theme.resolveAttribute(
+                    android.R.attr.selectableItemBackground,
+                    typedValue,
+                    true
+                )
+                ContextCompat.getDrawable(requireContext(), typedValue.resourceId)
+            }
+
+            fun configLongClick(view: View, id: Long): Boolean {
+                val container = view.findViewById<LinearLayout>(R.id.item_container)
+                if (selectedBillingList.contains(id)) {
+                    selectedBillingList.remove(id)
+                    container.background = defaultBackground
+                } else {
+                    selectedBillingList.add(id)
+                    container.setBackgroundColor(
+                        ContextCompat.getColor(requireContext(), R.color.billing_item_long_click)
+                    )
+                }
+                configToolbarTitle(
+                    if (selectedBillingList.isEmpty()) getString(R.string.menu_home)
+                    else getString(R.string.selected_items, selectedBillingList.size)
+                )
+                configFloatingActionIcon()
+                return true
+            }
 
             billingItemView.apply {
                 // classify
@@ -142,15 +219,20 @@ class HomeFragment : Fragment() {
                 val categoryPairs = UIUtils().getCategoryPairs(resources, requireActivity())
                 val categories = UIUtils().getCategories(resources)
                 val category = categoryPairs.find { it.second == record.classify }
-                classifyImageView.setImageResource(category?.first ?: R.drawable.account_balance_wallet_thin)
+                classifyImageView.setImageResource(
+                    category?.first ?: R.drawable.account_balance_wallet_thin
+                )
                 classifyImageView.contentDescription = categories
-                    .find { it.first == record.classify }?.second ?: getString(R.string.classify_icon)
+                    .find { it.first == record.classify }?.second
+                    ?: getString(R.string.classify_icon)
 
                 // Amount
                 val amountTextView = findViewById<TextView>(R.id.amount_text)
                 val (amount, amountAccessibility) = record.amount.let { value ->
-                    val convertedTrue = WalletCreator.convertAmountFormat(value.toString(), true, record.iotype)
-                    val convertedFalse = WalletCreator.convertAmountFormat(value.toString(), false, record.iotype)
+                    val convertedTrue =
+                        WalletCreator.convertAmountFormat(value.toString(), true, record.iotype)
+                    val convertedFalse =
+                        WalletCreator.convertAmountFormat(value.toString(), false, record.iotype)
                     convertedTrue to convertedFalse
                 }
                 val amountColor = resources.getColor(
@@ -161,7 +243,7 @@ class HomeFragment : Fragment() {
                 amountTextView.setTextColor(amountColor)
                 amountTextView.contentDescription = if (record.iotype == 0)
                     "${getString(R.string.expenditure)}$amountAccessibility"
-                    else "${getString(R.string.income)}$amountAccessibility"
+                else "${getString(R.string.income)}$amountAccessibility"
 
                 // Note
                 val noteTextView = findViewById<TextView>(R.id.notes_text)
@@ -174,7 +256,8 @@ class HomeFragment : Fragment() {
                 // Wallet
                 val walletTextView = findViewById<TextView>(R.id.wallet_text)
                 val walletName = allWallets.find { it.first == record.wallet }?.second
-                walletTextView.text = walletName ?: requireActivity().getString(R.string.unknown_wallet)
+                walletTextView.text =
+                    walletName ?: requireActivity().getString(R.string.unknown_wallet)
 
                 // Time
                 val localTime = TimeUtils.getDateFromTimestamp(record.time).toInstant()
@@ -184,9 +267,18 @@ class HomeFragment : Fragment() {
                     localTime.format(DateTimeFormatter.ofPattern("HH:mm"))
 
                 setOnClickListener {
-                    val intent = Intent(requireActivity(), BillingInfoActivity::class.java)
-                    intent.putExtra("billingId", record.id)
-                    modifiedBillingListenLauncher.launch(intent)
+                    if (selectedBillingList.isEmpty()) {
+                        val intent = Intent(requireActivity(), BillingInfoActivity::class.java)
+                        intent.putExtra("billingId", record.id)
+                        modifiedBillingListenLauncher.launch(intent)
+                        return@setOnClickListener
+                    }
+                    configLongClick(it, record.id)
+                }
+
+                setOnLongClickListener {
+                    if (selectedBillingList.isNotEmpty()) return@setOnLongClickListener true
+                    configLongClick(it, record.id)
                 }
 
             }
@@ -211,22 +303,28 @@ class HomeFragment : Fragment() {
             billingItemContainer.gravity = Gravity.CENTER
             billingItemContainer.addView(progressIndicator)
         }
+
         fun resetBillingItemContainer() {
             billingItemContainer.removeAllViews()
             billingItemContainer.gravity = Gravity.NO_GRAVITY
         }
+
         // 创建过渡动画（淡入淡出）
         fun createFadeTransition() {
             val fadeTransition = Fade()  // 默认模式是 Fade.IN_OUT（先淡出旧视图，再淡入新视图）
             // 开始延迟过渡
             TransitionManager.beginDelayedTransition(billingItemContainer, fadeTransition)
         }
+
         fun addBillingEmptyView() {
             val emptyView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.billing_empty_view, binding.billingItemContainer, false)
             if (UIUtils().isDarkMode(requireActivity().resources)) {
                 emptyView.findViewById<ImageView>(R.id.empty_image).setImageDrawable(
-                    resources.getDrawable(R.drawable.calendar_no_billing_dark, requireActivity().theme)
+                    resources.getDrawable(
+                        R.drawable.calendar_no_billing_dark,
+                        requireActivity().theme
+                    )
                 )
             }
             binding.billingItemContainer.addView(emptyView)
@@ -276,7 +374,14 @@ class HomeFragment : Fragment() {
                 if (isFirstSubtitleLock) {
                     isFirstSubtitleLock = false
                 } else {
-                    configToolbarSubtitle("${week.days.first().date.year}/${String.format("%02d", week.days.first().date.monthValue)}")
+                    configToolbarSubtitle(
+                        "${week.days.first().date.year}/${
+                            String.format(
+                                "%02d",
+                                week.days.first().date.monthValue
+                            )
+                        }"
+                    )
                 }
             }
             setup(
@@ -302,7 +407,7 @@ class HomeFragment : Fragment() {
                     resources.getColor(R.color.md_theme_onSecondaryContainer)
             )
             setBackgroundResource(
-                    R.drawable.calendar_current_day
+                R.drawable.calendar_current_day
             )
         }
         selectedDateView = textView
@@ -334,7 +439,7 @@ class HomeFragment : Fragment() {
 
     private fun configCalendarViewCreated(view: View) {
         val titlesContainer = view.findViewById<ViewGroup>(R.id.titlesContainer)
-        titlesContainer.setOnClickListener {  }
+        titlesContainer.setOnClickListener { }
         titlesContainer?.children?.forEachIndexed { index, child ->
             (child as TextView).text = daysOfWeek()[index]
                 .getDisplayName(TextStyle.NARROW, Locale.getDefault())
@@ -346,6 +451,19 @@ class HomeFragment : Fragment() {
         viewModel.getToolbar()?.subtitle = subtitle
     }
 
+    private fun configToolbarTitle(title: String) {
+        if (!isToolbarLoaded) return
+        viewModel.getToolbar()?.title = title
+    }
+
+    private fun configFloatingActionIcon() {
+        if (selectedBillingList.isNotEmpty()) {
+            binding.fab.setImageResource(R.drawable.delete)
+        } else {
+            binding.fab.setImageResource(R.drawable.add)
+        }
+    }
+
     private fun configFloatingActionButton() {
         val launcher = registerForActivityResult(StartActivityForResult()) { result ->
             if (result.resultCode != RESULT_OK || result.data == null) return@registerForActivityResult
@@ -354,6 +472,10 @@ class HomeFragment : Fragment() {
         }
 
         binding.fab.setOnClickListener {
+            if (selectedBillingList.isNotEmpty()) {
+                confirmDeleteBillingsDialog()
+                return@setOnClickListener
+            }
             val intent = Intent(requireActivity(), CreateBillingActivity::class.java)
             launcher.launch(intent)
         }

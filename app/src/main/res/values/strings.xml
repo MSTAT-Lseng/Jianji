@@ -129,4 +129,9 @@
     <string name="delete_wallet">Deleting a wallet</string>
     <string name="delete_wallet_success">Delete wallet successfully</string>
     <string name="delete_wallet_failed">Unknown error occurred while deleting wallet</string>
+    <string name="selected_items">%d items selected</string>
+    <string name="delete_billings">Delete bill</string>
+    <string name="loading">loading …</string>
+    <string name="delete_success">Deleted successfully</string>
+    <string name="delete_billings_message">Are you sure you want to delete these bills? Deposit bills/actual consumption bills will be deleted together.</string>
 </resources>

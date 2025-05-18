@@ -59,9 +59,6 @@ class MainActivity : AppCompatActivity() {
         sendToolbarMessage()
         configNavigationHeader()
 
-        val sha256Signature = BackupCreator.getAppSignature(this)
-        Log.d("sha256Signature", sha256Signature ?: "null")
-
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

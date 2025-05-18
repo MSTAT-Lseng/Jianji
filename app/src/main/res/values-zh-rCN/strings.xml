@@ -130,4 +130,9 @@
     <string name="delete_wallet">删除钱包</string>
     <string name="delete_wallet_success">删除钱包成功</string>
     <string name="delete_wallet_failed">删除钱包出现未知错误</string>
+    <string name="selected_items">选择了 %d 项</string>
+    <string name="delete_billings">删除账单</string>
+    <string name="loading">加载中…</string>
+    <string name="delete_success">删除成功</string>
+    <string name="delete_billings_message">确认要删除这些账单吗？订金账单/实际消费账单会一并删除</string>
 </resources>
