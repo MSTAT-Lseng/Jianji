@@ -135,4 +135,16 @@
     <string name="loading">加载中…</string>
     <string name="delete_success">删除成功</string>
     <string name="delete_billings_message">确认要删除这些账单吗？订金账单/实际消费账单会一并删除</string>
+    <string name="deposit_bill">订金</string>
+    <string name="consumption_bill">实际消费</string>
+    <string name="manual_date_selection">手动选择日期</string>
+    <string name="select_date_dialog">选择日期</string>
+    <string name="favorite_billings">收藏的账单</string>
+    <string name="cancel_collect">取消收藏</string>
+    <string name="collect_success">收藏成功</string>
+    <string name="collect_failed">收藏失败</string>
+    <string name="cancel_collect_success">取消收藏成功</string>
+    <string name="cancel_collect_failed">取消收藏失败</string>
+    <string name="no_collect_billing">您还没有收藏过账单</string>
+    <string name="favorite_billing_delete_empty">长按来选择要取消收藏的条目</string>
 </resources>

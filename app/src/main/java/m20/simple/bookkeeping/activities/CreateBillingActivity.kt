@@ -7,8 +7,6 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.view.MenuItem
-import android.view.View
-import android.widget.AdapterView
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.ImageView
@@ -19,6 +17,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.core.widget.doAfterTextChanged
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.button.MaterialButtonToggleGroup
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -27,9 +26,7 @@ import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.TimeFormat
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import m20.simple.bookkeeping.R
@@ -78,9 +75,6 @@ class CreateBillingActivity : AppCompatActivity() {
     private var selectedPhotosList = mutableListOf<Uri>()
     private var selectedPhotoNameList = mutableListOf<String>()
     private var photoUri: Uri? = null
-
-    private var createBillingCoroutineScope: Job? = null
-    private var loadEditBillingCoroutineScope: Job? = null
 
     companion object {
         const val createBillingReturnedKey = "createdBilling"
@@ -131,7 +125,7 @@ class CreateBillingActivity : AppCompatActivity() {
             configSubmitButton()
         }
 
-        loadEditBillingCoroutineScope = CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             editBillingRecord = if (isEditBilling == true) {
                 withContext(Dispatchers.IO) {
                     BillingCreator.getRecordById(
@@ -181,7 +175,7 @@ class CreateBillingActivity : AppCompatActivity() {
                 }
             }
             // 创建账单
-            createBillingCoroutineScope = CoroutineScope(Dispatchers.Main).launch {
+            lifecycleScope.launch {
                 // 添加记录（切换到 IO 线程）
                 val billingCreator = withContext(Dispatchers.IO) {
                     val activityContext = this@CreateBillingActivity
@@ -613,10 +607,6 @@ class CreateBillingActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         walletExecutorService.shutdown()
-        createBillingCoroutineScope?.cancel()
-        createBillingCoroutineScope = null
-        loadEditBillingCoroutineScope?.cancel()
-        loadEditBillingCoroutineScope = null
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {

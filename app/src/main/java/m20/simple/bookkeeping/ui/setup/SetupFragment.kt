@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import m20.simple.bookkeeping.R
+import m20.simple.bookkeeping.activities.FavoriteBillingActivity
 import m20.simple.bookkeeping.activities.WalletManageActivity
 import m20.simple.bookkeeping.databinding.FragmentSetupBinding
 import m20.simple.bookkeeping.utils.UIUtils
@@ -60,7 +61,7 @@ class SetupFragment : Fragment() {
                 }
                 2 -> {
                     // Collect View
-                    Toast.makeText(requireContext(), "Collect View clicked", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(requireActivity(), FavoriteBillingActivity::class.java))
                 }
             }
         }

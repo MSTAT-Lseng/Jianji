@@ -147,6 +147,7 @@
     <color name="calendar_current_day">#415F91</color>
     <color name="iotype_expenditure">#B71C1C</color>
     <color name="iotype_income">#388E3C</color>
+    <color name="iotype_deposit">#607D8B</color>
     <color name="billing_paid_icon_colors">#331f1f1f</color>
     <color name="picture_view_header">#323232</color>
     <color name="default_wallet_tag_background">#e8f5e9</color>

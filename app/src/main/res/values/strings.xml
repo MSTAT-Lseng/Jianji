@@ -134,4 +134,16 @@
     <string name="loading">loading …</string>
     <string name="delete_success">Deleted successfully</string>
     <string name="delete_billings_message">Are you sure you want to delete these bills? Deposit bills/actual consumption bills will be deleted together.</string>
+    <string name="deposit_bill">Deposit</string>
+    <string name="consumption_bill">Actual consumption</string>
+    <string name="manual_date_selection">Manual date selection</string>
+    <string name="select_date_dialog">Select Date</string>
+    <string name="favorite_billings">Favorite bills</string>
+    <string name="cancel_collect">Remove from favorites</string>
+    <string name="collect_success">Successfully added</string>
+    <string name="collect_failed">Collection failed</string>
+    <string name="cancel_collect_success">Successfully canceled the collection</string>
+    <string name="cancel_collect_failed">Failed to cancel collection</string>
+    <string name="no_collect_billing">You haven\'t saved any bills yet.</string>
+    <string name="favorite_billing_delete_empty">Long press to select the item to be uncollected.</string>
 </resources>

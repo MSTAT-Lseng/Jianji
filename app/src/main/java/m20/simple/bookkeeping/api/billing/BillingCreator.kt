@@ -3,6 +3,7 @@ package m20.simple.bookkeeping.api.billing
 import android.content.Context
 import android.content.res.Resources
 import m20.simple.bookkeeping.R
+import m20.simple.bookkeeping.api.favorite.FavoriteCreator
 import m20.simple.bookkeeping.api.objects.BillingObject
 import m20.simple.bookkeeping.api.wallet.WalletCreator
 import m20.simple.bookkeeping.database.billing.BillingDao
@@ -305,6 +306,8 @@ object BillingCreator {
                 "true" -> billingDao.deleteRecord((id + 1))
                 "consumption" -> billingDao.deleteRecord((id - 1))
             }
+
+            FavoriteCreator.cancelBillingFavorite(context, id)
 
             val recordDelete = billingDao.deleteRecord(id) > 0
             recordDelete

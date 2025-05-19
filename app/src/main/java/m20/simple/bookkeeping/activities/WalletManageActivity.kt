@@ -9,12 +9,12 @@ import android.widget.CheckBox
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.PopupMenu
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -23,7 +23,6 @@ import m20.simple.bookkeeping.activities.walletmanage.WalletListAdapter
 import m20.simple.bookkeeping.activities.walletmanage.WalletListItem
 import m20.simple.bookkeeping.api.wallet.WalletCreator
 import m20.simple.bookkeeping.utils.UIUtils
-
 
 class WalletManageActivity : AppCompatActivity() {
 
@@ -133,7 +132,7 @@ class WalletManageActivity : AppCompatActivity() {
             recyclerView.layoutManager = LinearLayoutManager(this)
             recyclerView.adapter = walletListAdapter
         }
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             val walletCreator = WalletCreator
             val walletList = withContext(Dispatchers.IO) {
                 walletCreator.getAllWallets(this@WalletManageActivity)
@@ -208,7 +207,7 @@ class WalletManageActivity : AppCompatActivity() {
     }
 
     private fun taskAddWallet(name: String) {
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             val walletCreator = WalletCreator
             val result = withContext(Dispatchers.IO) {
                 walletCreator.createWallet(this@WalletManageActivity, name)
@@ -249,7 +248,7 @@ class WalletManageActivity : AppCompatActivity() {
         showSuccessToast: Boolean = true,
         onSuccess: () -> Unit = {}
     ) {
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             val result = withContext(Dispatchers.IO) {
                 task()
             }

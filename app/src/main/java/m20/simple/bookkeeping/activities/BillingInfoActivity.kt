@@ -16,6 +16,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.carousel.CarouselLayoutManager
@@ -23,13 +24,12 @@ import com.google.android.material.carousel.CarouselSnapHelper
 import com.google.android.material.carousel.HeroCarouselStrategy
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import m20.simple.bookkeeping.R
 import m20.simple.bookkeeping.api.billing.BillingCreator
+import m20.simple.bookkeeping.api.favorite.FavoriteCreator
 import m20.simple.bookkeeping.api.wallet.WalletCreator
 import m20.simple.bookkeeping.database.billing.BillingDao
 import m20.simple.bookkeeping.utils.FileUtils
@@ -44,7 +44,7 @@ class BillingInfoActivity : AppCompatActivity() {
 
     private var billId : Long = -1L
     private var depositStatus: String = "notSet"
-    private var billCoroutineScope : Job? = null
+    private var favoriteStatus: Boolean = false
     private var topBar : MaterialToolbar? = null
     private var modified : Boolean = false
 
@@ -167,7 +167,7 @@ class BillingInfoActivity : AppCompatActivity() {
         val categoryPairs = UIUtils().getCategoryPairs(resources, this, false)
         val categories = UIUtils().getCategories(resources)
 
-        billCoroutineScope = CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             val record = withContext(Dispatchers.IO) {
                 BillingCreator.getRecordById(billId, this@BillingInfoActivity)
             }
@@ -213,6 +213,10 @@ class BillingInfoActivity : AppCompatActivity() {
                 "consumption" -> getString(R.string.deposit_consumption)
                 else -> getString(R.string.realtime_pay)
             }
+
+            // Favorite
+            favoriteStatus = FavoriteCreator.isFavoriteBilling(
+                this@BillingInfoActivity, billId)
             invalidateOptionsMenu()
 
             // Wallet
@@ -246,7 +250,6 @@ class BillingInfoActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        billCoroutineScope?.cancel()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -270,6 +273,12 @@ class BillingInfoActivity : AppCompatActivity() {
             "consumption" ->
                 setConsumptionItem()
         }
+
+        val favoriteItem = menu?.findItem(R.id.collect)
+        if (favoriteStatus) {
+            favoriteItem?.setIcon(R.drawable.star_filled)
+            favoriteItem?.setTitle(R.string.cancel_collect)
+        }
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -282,7 +291,7 @@ class BillingInfoActivity : AppCompatActivity() {
         }
 
         fun taskRemoveBilling() {
-            CoroutineScope(Dispatchers.Main).launch {
+            lifecycleScope.launch {
                 val removeCode = withContext(Dispatchers.IO) {
                     val billingCreator = BillingCreator
                     billingCreator.deleteBillingById(billId, this@BillingInfoActivity)
@@ -327,6 +336,76 @@ class BillingInfoActivity : AppCompatActivity() {
             }
         }
 
+        fun handleFavoriteOperation(
+            operation: suspend () -> Any?,
+            onSuccess: () -> Int,
+            onError: Int
+        ) {
+            fun showToast(resId: Int) {
+                Toast.makeText(this, getString(resId), Toast.LENGTH_SHORT).show()
+            }
+
+            fun handleSuccess(resId: Int) {
+                invalidateOptionsMenu()
+                showToast(resId)
+                modified = true; setModified()
+            }
+
+            fun handleError(resId: Int) {
+                showToast(resId)
+            }
+
+            lifecycleScope.launch {
+                val result = withContext(Dispatchers.IO) {
+                    operation()
+                }
+
+                when (result) {
+                    is Long -> if (result != -1L) {
+                        handleSuccess(onSuccess())
+                    } else {
+                        handleError(onError)
+                    }
+                    is Boolean -> if (result) {
+                        handleSuccess(onSuccess())
+                    } else {
+                        handleError(onError)
+                    }
+                    else -> handleError(onError)
+                }
+            }
+        }
+
+        fun addFavorite() {
+            handleFavoriteOperation(
+                operation = { FavoriteCreator.addBillingFavorite(this, billId) },
+                onSuccess = {
+                    favoriteStatus = true
+                    R.string.collect_success
+                },
+                onError = R.string.collect_failed
+            )
+        }
+
+        fun cancelFavorite() {
+            handleFavoriteOperation(
+                operation = { FavoriteCreator.cancelBillingFavorite(this, billId) },
+                onSuccess = {
+                    favoriteStatus = false
+                    R.string.cancel_collect_success
+                },
+                onError = R.string.cancel_collect_failed
+            )
+        }
+
+        fun taskFavorite() {
+            if (favoriteStatus) {
+                cancelFavorite()
+            } else {
+                addFavorite()
+            }
+        }
+
         return when (item.itemId) {
             R.id.edit -> {
                 taskEditBilling()
@@ -334,6 +413,10 @@ class BillingInfoActivity : AppCompatActivity() {
             }
             R.id.delete -> {
                 removeBilling()
+                true
+            }
+            R.id.collect -> {
+                taskFavorite()
                 true
             }
             else -> super.onOptionsItemSelected(item)
@@ -358,7 +441,7 @@ class BillingInfoActivity : AppCompatActivity() {
     }
 
     private fun depositPayDateEdited(timestamp: Long) {
-        CoroutineScope(Dispatchers.Main).launch {
+        lifecycleScope.launch {
             val billingCreator = BillingCreator
             val result = withContext(Dispatchers.IO) {
                 billingCreator.modifyDepositBillingPayDate(billId, this@BillingInfoActivity, timestamp)
