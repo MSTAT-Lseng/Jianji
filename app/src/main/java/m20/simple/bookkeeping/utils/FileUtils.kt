@@ -89,4 +89,20 @@ class FileUtils (private val context: Context) {
         return File(photosDir, name).takeIf { it.exists() }?.delete() ?: false
     }
 
+    /**
+     * 根据数据库名称获取数据库文件的 Uri。
+     *
+     * @param dbName  数据库名称
+     * @return 数据库文件的 Uri
+     */
+    fun getDatabaseFileUri(dbName: String?): Uri? {
+        // 获取数据库文件对象
+        val dbFile = context.getDatabasePath(dbName)
+
+        // 将 File 对象转换为 Uri
+        val dbUri = Uri.fromFile(dbFile)
+
+        return dbUri
+    }
+
 }

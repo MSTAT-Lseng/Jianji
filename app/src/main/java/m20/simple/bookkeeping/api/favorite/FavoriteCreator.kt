@@ -39,6 +39,25 @@ object FavoriteCreator {
         return result > 0
     }
 
+    // 批量取消收藏账单
+    fun cancelBillingFavorites(
+        context: Context,
+        billingIds: List<Long>
+    ): Boolean {
+        val favoriteDao = FavoriteDao(context)
+        var result = true
+        for (billingId in billingIds) {
+            val rowsDeleted = favoriteDao.deleteFavoritesByBillingId(billingId)
+            if (rowsDeleted <= 0) {
+                result = false
+                break
+            }
+        }
+        favoriteDao.close()
+        return result
+    }
+
+
     // 分页查询
     fun getFavoritesPaginated(
         context: Context,

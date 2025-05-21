@@ -146,4 +146,8 @@
     <string name="cancel_collect_failed">Failed to cancel collection</string>
     <string name="no_collect_billing">You haven\'t saved any bills yet.</string>
     <string name="favorite_billing_delete_empty">Long press to select the item to be uncollected.</string>
+    <string name="favorite_billing_delete_title">Remove from favorites</string>
+    <string name="favorite_billing_delete_message">Do you want to remove these items from your collection? Removing these items from your collection will not delete your bill.</string>
+    <string name="favorite_billing_delete_success">Cancel the collection bill successfully</string>
+    <string name="favorite_billing_delete_failed">Failed to cancel collection of some bills</string>
 </resources>

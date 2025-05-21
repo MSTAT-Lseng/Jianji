@@ -147,4 +147,8 @@
     <string name="cancel_collect_failed">取消收藏失败</string>
     <string name="no_collect_billing">您还没有收藏过账单</string>
     <string name="favorite_billing_delete_empty">长按来选择要取消收藏的条目</string>
+    <string name="favorite_billing_delete_title">取消收藏</string>
+    <string name="favorite_billing_delete_message">要取消这些收藏吗？取消收藏不会删除账单。</string>
+    <string name="favorite_billing_delete_success">取消收藏账单成功</string>
+    <string name="favorite_billing_delete_failed">部分账单取消收藏失败</string>
 </resources>
