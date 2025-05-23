@@ -4,6 +4,7 @@ import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.content.res.Resources
 import android.os.Bundle
+import android.util.Log
 import android.util.TypedValue
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -15,6 +16,7 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts.StartActivityForResult
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
 import androidx.fragment.app.Fragment
@@ -82,7 +84,7 @@ class HomeFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentHomeBinding.inflate(inflater, container, false)
-        UIUtils().fillStatusBarHeight(requireContext(), binding.statusbarHeight)
+        UIUtils.fillStatusBarHeight(requireContext(), binding.statusbarHeight)
 
         loadBillingDay = TimeUtils.getDayLevelTimestamp()
         configCalendar()
@@ -99,6 +101,33 @@ class HomeFragment : Fragment() {
         configCalendarViewCreated(view)
         loadBillingItems()
         configCustomLinearSwipe()
+        initNavBottomHeight(view)
+    }
+
+    private fun initNavBottomHeight(view: View) {
+        val customLinear = view.findViewById<CustomLinearLayout>(R.id.billing_item_container)
+        UIUtils.getNavigationBarHeight(customLinear, requireActivity(),
+            fun (height) {
+                plusCustomLinearPaddingBottom(customLinear, height)
+                plusFabMarginBottom(height)
+            }
+        )
+    }
+
+    private fun plusCustomLinearPaddingBottom(customLinear: CustomLinearLayout, padding: Int) {
+        customLinear.setPadding(
+            customLinear.paddingLeft,
+            customLinear.paddingTop,
+            customLinear.paddingRight,
+            customLinear.paddingBottom + padding
+        )
+    }
+
+    private fun plusFabMarginBottom(margin: Int) {
+        val fab = binding.fab
+        val params = fab.layoutParams as ConstraintLayout.LayoutParams
+        params.bottomMargin += margin
+        fab.layoutParams = params
     }
 
     private fun configCustomLinearSwipe() {
@@ -182,7 +211,11 @@ class HomeFragment : Fragment() {
         configToolbarTitle(getString(R.string.menu_home))
         configFloatingActionIcon()
 
-        fun addRecord(record: BillingDao.Record, allWallets: List<Pair<Int, String>>) {
+        fun addRecord(
+            record: BillingDao.Record,
+            allWallets: List<Pair<Int, String>>,
+            placeholder: Boolean = false
+        ) {
             val billingItemWidget = BillingItemWidget
             val billingItemView = billingItemWidget.getWidget(
                 requireActivity(),
@@ -230,6 +263,9 @@ class HomeFragment : Fragment() {
                 configLongClick(it, record.id)
             }
 
+            if (placeholder) {
+                billingItemView.visibility = View.INVISIBLE
+            }
             binding.billingItemContainer.addView(billingItemView)
         }
 
@@ -267,7 +303,7 @@ class HomeFragment : Fragment() {
         fun addBillingEmptyView() {
             val emptyView = LayoutInflater.from(requireContext())
                 .inflate(R.layout.billing_empty_view, binding.billingItemContainer, false)
-            if (UIUtils().isDarkMode(requireActivity().resources)) {
+            if (UIUtils.isDarkMode(requireActivity().resources)) {
                 emptyView.findViewById<ImageView>(R.id.empty_image).setImageDrawable(
                     resources.getDrawable(
                         R.drawable.calendar_no_billing_dark,
@@ -293,6 +329,8 @@ class HomeFragment : Fragment() {
             }
             if (records.isEmpty()) {
                 addBillingEmptyView()
+            } else {
+                addRecord(BillingCreator.getNullRecord(), allWallets, true)
             }
         }
     }
@@ -349,7 +387,7 @@ class HomeFragment : Fragment() {
         }
         textView.apply {
             setTextColor(
-                if (!UIUtils().isDarkMode(requireActivity().resources))
+                if (!UIUtils.isDarkMode(requireActivity().resources))
                     resources.getColor(android.R.color.white)
                 else
                     resources.getColor(R.color.md_theme_onSecondaryContainer)

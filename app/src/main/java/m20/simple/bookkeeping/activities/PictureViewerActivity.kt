@@ -24,7 +24,7 @@ class PictureViewerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_picture_viewer)
 
-        UIUtils().fillStatusBarHeight(this, findViewById(R.id.status_bar_view))
+        UIUtils.fillStatusBarHeight(this, findViewById(R.id.status_bar_view))
         findViewById<ImageView>(R.id.back_btn).setOnClickListener {
             finish()
         }

@@ -150,4 +150,6 @@
     <string name="favorite_billing_delete_message">Do you want to remove these items from your collection? Removing these items from your collection will not delete your bill.</string>
     <string name="favorite_billing_delete_success">Cancel the collection bill successfully</string>
     <string name="favorite_billing_delete_failed">Failed to cancel collection of some bills</string>
+    <string name="loading_more">Load More</string>
+    <string name="no_more">No more</string>
 </resources>

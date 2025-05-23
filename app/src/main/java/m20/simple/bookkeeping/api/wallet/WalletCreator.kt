@@ -3,6 +3,7 @@ package m20.simple.bookkeeping.api.wallet
 import android.content.Context
 import android.content.res.Resources
 import m20.simple.bookkeeping.api.billing.BillingCreator
+import m20.simple.bookkeeping.api.config.PrefsConfigCreator
 import m20.simple.bookkeeping.config.PrefsConfig
 import m20.simple.bookkeeping.database.billing.BillingDao
 import m20.simple.bookkeeping.database.wallet.WalletDao
@@ -20,11 +21,7 @@ object WalletCreator {
 
     // 获得默认钱包信息，返回 (钱包ID，钱包名称)
     fun getDefaultWallet(context: Context, resources: Resources): Pair<Int, String> {
-        val defaultWalletID = PrefsConfig.getIntValue(
-            context,
-            PrefsConfig.KEY_DEFAULT_WALLET_ID,
-            PrefsConfig.DEFAULT_WALLET_ID
-        )
+        val defaultWalletID = PrefsConfigCreator.getDefaultWalletId(context)
 
         val walletDao = WalletDao(context)
         return walletDao.getAllWallets()
@@ -49,13 +46,7 @@ object WalletCreator {
         val success = walletInfo.first.isNotEmpty()
 
         // 如果成功，则设置默认钱包ID
-        if (success) {
-            PrefsConfig.setIntValue(
-                context,
-                PrefsConfig.KEY_DEFAULT_WALLET_ID,
-                walletID
-            )
-        }
+        if (success) PrefsConfigCreator.setDefaultWalletId(context, walletID)
 
         return success
     }

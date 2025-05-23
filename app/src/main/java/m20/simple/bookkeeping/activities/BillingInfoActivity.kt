@@ -67,7 +67,7 @@ class BillingInfoActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_billing_info)
 
-        UIUtils().setStatusBarTextColor(this, !UIUtils().isDarkMode(resources))
+        UIUtils.setStatusBarTextColor(this, !UIUtils.isDarkMode(resources))
         configToolbar()
         billId = intent.getLongExtra("billingId", billId)
         modified = intent.getBooleanExtra("modified", modified)
@@ -121,7 +121,7 @@ class BillingInfoActivity : AppCompatActivity() {
             contentTextView.text = content
             iconImageView.setImageResource(iconDrawable)
             container.setOnClickListener {
-                UIUtils().copyTextToClipboard(
+                UIUtils.copyTextToClipboard(
                     this@BillingInfoActivity,
                     "$title: $content"
                 )
@@ -164,8 +164,8 @@ class BillingInfoActivity : AppCompatActivity() {
         val depositStatusText = findViewById<TextView>(R.id.deposit_status)
         val listContainer = findViewById<LinearLayout>(R.id.list_container)
 
-        val categoryPairs = UIUtils().getCategoryPairs(resources, this, false)
-        val categories = UIUtils().getCategories(resources)
+        val categoryPairs = UIUtils.getCategoryPairs(resources, this, false)
+        val categories = UIUtils.getCategories(resources)
 
         lifecycleScope.launch {
             val record = withContext(Dispatchers.IO) {

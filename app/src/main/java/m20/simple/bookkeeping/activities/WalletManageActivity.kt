@@ -31,7 +31,7 @@ class WalletManageActivity : AppCompatActivity() {
         setContentView(R.layout.activity_wallet_manage)
         setSupportActionBar(findViewById(R.id.toolbar))
 
-        val uiUtils = UIUtils()
+        val uiUtils = UIUtils
         uiUtils.fillStatusBarHeight(this, findViewById(R.id.status_bar_view))
         uiUtils.setStatusBarTextColor(this, !uiUtils.isDarkMode(resources))
 

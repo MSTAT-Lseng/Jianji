@@ -42,7 +42,7 @@ class SetupFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        UIUtils().fillStatusBarHeight(requireContext(), binding.statusbarHeight)
+        UIUtils.fillStatusBarHeight(requireContext(), binding.statusbarHeight)
         clearToolbarSubtitle()
         configList(view)
     }

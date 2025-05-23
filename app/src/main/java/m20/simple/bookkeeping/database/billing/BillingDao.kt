@@ -4,6 +4,7 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
+import m20.simple.bookkeeping.api.billing.BillingCreator
 import java.util.Calendar
 import java.util.concurrent.TimeUnit
 
@@ -144,20 +145,17 @@ class BillingDao(context: Context) {
             if (it.moveToFirst()) {
                 cursorToRecord(it)
             } else {
-                Record(
-                    id = -1,
-                    time = 0,
-                    amount = 0,
-                    iotype = 0,
-                    classify = "",
-                    notes = null,
-                    images = null,
-                    deposit = "",
-                    wallet = 0,
-                    tags = null
-                ) // 返回一个空的 Record 对象
+                getNullRecord() // 返回一个空的 Record 对象
             }
         }
+    }
+
+    /**
+     * 返回一个空的 Record 对象
+     * @return 一个空的 Record 对象
+     */
+    fun getNullRecord(): Record {
+        return BillingCreator.getNullRecord()
     }
 
     /**

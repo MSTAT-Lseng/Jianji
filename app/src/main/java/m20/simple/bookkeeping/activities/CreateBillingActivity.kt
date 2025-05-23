@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import m20.simple.bookkeeping.R
 import m20.simple.bookkeeping.api.billing.BillingCreator
+import m20.simple.bookkeeping.api.config.HintConfigCreator
 import m20.simple.bookkeeping.api.objects.BillingObject
 import m20.simple.bookkeeping.api.wallet.WalletCreator
 import m20.simple.bookkeeping.config.HintConfig
@@ -85,7 +86,7 @@ class CreateBillingActivity : AppCompatActivity() {
         setContentView(R.layout.activity_create_billing)
         setSupportActionBar(findViewById(R.id.toolbar))
 
-        val uiUtils = UIUtils()
+        val uiUtils = UIUtils
         uiUtils.fillStatusBarHeight(this, findViewById(R.id.status_bar_view))
         uiUtils.setStatusBarTextColor(this, !uiUtils.isDarkMode(resources))
 
@@ -304,9 +305,7 @@ class CreateBillingActivity : AppCompatActivity() {
                 .setMessage(resources.getString(R.string.deposit_selected_hint_message))
                 .setCancelable(false)
                 .setNeutralButton(resources.getString(R.string.deposit_never_show)) { _, _ ->
-                    HintConfig.setBooleanValue(
-                        this, HintConfig.KEY_DEPOSIT_BILL_HINT, false
-                    )
+                    HintConfigCreator.setDepositBillHint(this, false)
                     setDepositDate()
                 }
                 .setPositiveButton(resources.getString(R.string.deposit_ok)) { _, _ ->
@@ -317,10 +316,7 @@ class CreateBillingActivity : AppCompatActivity() {
 
         depositCheckBox.setOnCheckedChangeListener { _, isChecked ->
             billingObject.deposit = if (isChecked) "true" else "false"
-            if (isChecked && HintConfig.getBooleanValue(
-                    this, HintConfig.KEY_DEPOSIT_BILL_HINT, true
-                )
-            ) {
+            if (isChecked && HintConfigCreator.getDepositBillHint(this)) {
                 showHintDialog()
             } else if (isChecked) {
                 setDepositDate()

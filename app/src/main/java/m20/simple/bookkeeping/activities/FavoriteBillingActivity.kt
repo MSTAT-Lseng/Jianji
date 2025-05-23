@@ -47,7 +47,7 @@ class FavoriteBillingActivity : AppCompatActivity() {
         setContentView(R.layout.activity_favorite_billing)
         setSupportActionBar(findViewById(R.id.toolbar))
 
-        val uiUtils = UIUtils()
+        val uiUtils = UIUtils
         uiUtils.fillStatusBarHeight(this, findViewById(R.id.status_bar_view))
         uiUtils.setStatusBarTextColor(this, !uiUtils.isDarkMode(resources))
 

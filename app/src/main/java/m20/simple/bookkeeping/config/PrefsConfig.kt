@@ -8,7 +8,10 @@ object PrefsConfig {
 
     private val PREF_NAME: String = "prefs_config_prefs"
     val KEY_DEFAULT_WALLET_ID: String = "default_wallet_id"
+    val KEY_NAV_BAR_HEIGHT = "nav_bar_height"
+
     val DEFAULT_WALLET_ID = 1
+    val DEFAULT_NAV_BAR_HEIGHT = 0
 
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)

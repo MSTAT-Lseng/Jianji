@@ -340,6 +340,22 @@ object BillingCreator {
         return result
     }
 
+    // 返回一个空的 Record
+    fun getNullRecord(): BillingDao.Record {
+        return BillingDao.Record(
+            id = -1,
+            time = 0,
+            amount = 0,
+            iotype = 0,
+            classify = "",
+            notes = null,
+            images = null,
+            deposit = "",
+            wallet = 0,
+            tags = null
+        )
+    }
+
     fun getCreateBillingFailedReason(reason: Int, resources: Resources): String {
         val billingFailureReasons = mapOf(
             CREATE_BILLING_TIME_CHECK_FAILED to R.string.create_billing_time_check_failed,

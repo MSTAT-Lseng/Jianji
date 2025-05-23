@@ -6,10 +6,13 @@ import android.content.Context
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.view.View
+import android.view.Window
+import androidx.core.view.ViewCompat
 import m20.simple.bookkeeping.R
+import m20.simple.bookkeeping.api.config.PrefsConfigCreator
+import m20.simple.bookkeeping.config.PrefsConfig
 
-
-class UIUtils {
+object UIUtils {
 
     @SuppressLint("DiscouragedApi", "InternalInsetResource")
     fun getStatusBarHeight(context: Context): Int {
@@ -44,10 +47,13 @@ class UIUtils {
     }
 
     // 获得账单分类对应的图标，详见 arrays.xml。
-    fun getCategoryPairs(resources: Resources,
-                         activity: Activity,
-                         thinIcon: Boolean = true): List<Pair<Int, String>> {
-        val iconList = if (thinIcon) R.array.classify_icon_list_thin else R.array.classify_icon_list_regular
+    fun getCategoryPairs(
+        resources: Resources,
+        activity: Activity,
+        thinIcon: Boolean = true
+    ): List<Pair<Int, String>> {
+        val iconList =
+            if (thinIcon) R.array.classify_icon_list_thin else R.array.classify_icon_list_regular
 
         val typedArray = resources.obtainTypedArray(iconList)
         val categories = resources.getStringArray(R.array.classify_list_id)
@@ -77,9 +83,40 @@ class UIUtils {
 
     // 复制文本到剪贴板
     fun copyTextToClipboard(context: Context, text: String) {
-        val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+        val clipboard =
+            context.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
         val clip = android.content.ClipData.newPlainText("Copied Text", text)
         clipboard.setPrimaryClip(clip)
+    }
+
+    fun getNavigationBarHeight(
+        rootView: View,
+        activity: Activity,
+        callback: (Int) -> Unit = {}
+    ) {
+        val prefs = PrefsConfigCreator
+        val prefsNavHeight = prefs.getNavBarHeight(activity)
+        if (prefsNavHeight != 0) {
+            callback(prefsNavHeight)
+            return
+        }
+
+        ViewCompat.setOnApplyWindowInsetsListener(rootView) { view, insets ->
+            val navHeight = getNavigationBarHeight(activity.window)
+            if (navHeight != 0) {
+                prefs.setNavBarHeight(activity, navHeight)
+            }
+            callback(navHeight)
+            insets
+        }
+    }
+
+
+    // 获取底部导航栏高度
+    private fun getNavigationBarHeight(window: Window): Int {
+        val windowInsets = window.decorView.rootWindowInsets
+        val navigationBarHeight = windowInsets.systemWindowInsetBottom
+        return navigationBarHeight
     }
 
 }

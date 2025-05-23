@@ -8,6 +8,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.drawerlayout.widget.DrawerLayout.SimpleDrawerListener
 import androidx.lifecycle.ViewModelProvider
@@ -18,6 +19,8 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import androidx.navigation.ui.setupWithNavController
 import com.google.android.material.navigation.NavigationView
 import m20.simple.bookkeeping.api.backup.BackupCreator
+import m20.simple.bookkeeping.api.config.PrefsConfigCreator
+import m20.simple.bookkeeping.config.PrefsConfig
 import m20.simple.bookkeeping.databinding.ActivityMainBinding
 import m20.simple.bookkeeping.ui.home.HomeViewModel
 import m20.simple.bookkeeping.utils.PackageUtils
@@ -73,7 +76,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun configTopBar() {
-        val uiUtils = UIUtils()
+        val uiUtils = UIUtils
         // set status bar height
         uiUtils.fillStatusBarHeight(this@MainActivity, findViewById(R.id.status_bar_view))
         // set status bar text color
@@ -99,7 +102,8 @@ class MainActivity : AppCompatActivity() {
         val navigationView = findViewById<NavigationView>(R.id.nav_view)
         val headerView = navigationView.getHeaderView(0)
         val textView = headerView.findViewById<TextView>(R.id.titleView)
-        textView.text = getString(R.string.nav_title,
+        textView.text = getString(
+            R.string.nav_title,
             getString(R.string.app_name),
             PackageUtils(this).getVersionName()
         )

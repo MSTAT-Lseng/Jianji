@@ -151,4 +151,6 @@
     <string name="favorite_billing_delete_message">要取消这些收藏吗？取消收藏不会删除账单。</string>
     <string name="favorite_billing_delete_success">取消收藏账单成功</string>
     <string name="favorite_billing_delete_failed">部分账单取消收藏失败</string>
+    <string name="loading_more">加载更多</string>
+    <string name="no_more">没有更多了</string>
 </resources>

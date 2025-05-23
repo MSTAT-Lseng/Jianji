@@ -35,8 +35,8 @@ object BillingItemWidget {
         billingItemView.apply {
             // classify
             val classifyImageView = findViewById<ImageView>(R.id.classify_image)
-            val categoryPairs = UIUtils().getCategoryPairs(resources, activity)
-            val categories = UIUtils().getCategories(resources)
+            val categoryPairs = UIUtils.getCategoryPairs(resources, activity)
+            val categories = UIUtils.getCategories(resources)
             val category = categoryPairs.find { it.second == record.classify }
             classifyImageView.setImageResource(
                 category?.first ?: R.drawable.account_balance_wallet_thin
