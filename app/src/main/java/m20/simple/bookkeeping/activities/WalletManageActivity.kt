@@ -125,7 +125,8 @@ class WalletManageActivity : AppCompatActivity() {
                 resources,
                 fun(walletListItem: WalletListItem, view: View) {
                     onWalletItemClick(walletListItem, view)
-                }
+                },
+                this
             )
 
             val recyclerView: RecyclerView = findViewById(R.id.recycler_view)

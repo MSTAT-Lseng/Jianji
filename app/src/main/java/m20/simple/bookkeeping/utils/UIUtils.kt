@@ -8,6 +8,7 @@ import android.content.res.Resources
 import android.view.View
 import android.view.Window
 import androidx.core.view.ViewCompat
+import androidx.recyclerview.widget.RecyclerView
 import m20.simple.bookkeeping.R
 import m20.simple.bookkeeping.api.config.PrefsConfigCreator
 import m20.simple.bookkeeping.config.PrefsConfig
@@ -24,12 +25,29 @@ object UIUtils {
         }
     }
 
-    fun fillStatusBarHeight(context: Context, statusBarView: View) {
-        statusBarView.layoutParams?.apply {
-            height = getStatusBarHeight(context)
-            statusBarView.layoutParams = this
-        }
+    fun commonNavBarHeight(navBarHeightView: View, activity: Activity) {
+        getNavigationBarHeight(
+            navBarHeightView,
+            activity,
+            fun(navHeight) {
+                fillNavBarHeight(navBarHeightView, navHeight)
+            }
+        )
     }
+
+    fun fillStatusBarHeight(context: Context, statusBarView: View) {
+        fillViewHeight(statusBarView, getStatusBarHeight(context))
+    }
+
+    fun fillNavBarHeight(navBarView: View, height: Int) {
+        fillViewHeight(navBarView, height)
+    }
+
+    private fun fillViewHeight(view: View, height: Int) {
+        view.layoutParams.height += height
+        view.requestLayout()
+    }
+
 
     fun setStatusBarTextColor(activity: Activity, isDark: Boolean) {
         val window = activity.window

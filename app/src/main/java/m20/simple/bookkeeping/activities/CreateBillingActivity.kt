@@ -7,6 +7,8 @@ import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
 import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.CheckBox
 import android.widget.ImageView
@@ -15,6 +17,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.FileProvider
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
@@ -89,6 +92,7 @@ class CreateBillingActivity : AppCompatActivity() {
         val uiUtils = UIUtils
         uiUtils.fillStatusBarHeight(this, findViewById(R.id.status_bar_view))
         uiUtils.setStatusBarTextColor(this, !uiUtils.isDarkMode(resources))
+        configNavBarHeight()
 
         isEditBilling = intent.getBooleanExtra("isEditBilling", false)
         isEditBillingId = intent.getLongExtra("billingId", -1)
@@ -147,6 +151,25 @@ class CreateBillingActivity : AppCompatActivity() {
             initBillingObject()
             initComponent()
         }
+    }
+
+    private fun configNavBarHeight() {
+        val finishBillingButton = findViewById<Button>(R.id.finish_billing_btn)
+        val navBarHeightView = findViewById<View>(R.id.nav_bar_height)
+        UIUtils.getNavigationBarHeight(
+            finishBillingButton,
+            this,
+            fun (navHeight) {
+                configButtonMarginBottom(finishBillingButton, navHeight)
+                UIUtils.fillNavBarHeight(navBarHeightView, navHeight)
+            }
+        )
+    }
+
+    private fun configButtonMarginBottom(button: Button, margin: Int) {
+        val params = button.layoutParams as ViewGroup.MarginLayoutParams
+        params.bottomMargin += margin
+        button.layoutParams = params
     }
 
     private fun configToolbar() {

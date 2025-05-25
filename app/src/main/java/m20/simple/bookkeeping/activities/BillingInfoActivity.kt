@@ -69,6 +69,7 @@ class BillingInfoActivity : AppCompatActivity() {
 
         UIUtils.setStatusBarTextColor(this, !UIUtils.isDarkMode(resources))
         configToolbar()
+        UIUtils.commonNavBarHeight(findViewById(R.id.nav_bar_height), this)
         billId = intent.getLongExtra("billingId", billId)
         modified = intent.getBooleanExtra("modified", modified)
         if (checkBillingID()) {
