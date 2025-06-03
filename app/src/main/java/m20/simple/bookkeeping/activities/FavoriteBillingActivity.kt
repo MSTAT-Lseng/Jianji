@@ -50,6 +50,7 @@ class FavoriteBillingActivity : AppCompatActivity() {
         val uiUtils = UIUtils
         uiUtils.fillStatusBarHeight(this, findViewById(R.id.status_bar_view))
         uiUtils.setStatusBarTextColor(this, !uiUtils.isDarkMode(resources))
+        uiUtils.commonNavBarHeight(findViewById(R.id.nav_bar_height), this)
 
         loadingFavoriteBillings()
         monitorSlideBottom()

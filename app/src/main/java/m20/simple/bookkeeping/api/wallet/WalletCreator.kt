@@ -124,6 +124,7 @@ object WalletCreator {
 
         if (originAmount.isEmpty()) return formatWithSymbol("0.00")
         if (originAmount.length == 1) return formatWithSymbol("0.0$originAmount")
+        if (originAmount.length == 2) return formatWithSymbol("0.$originAmount")
 
         val length = originAmount.length
         val beforeDecimal = originAmount.substring(0, length - 2)

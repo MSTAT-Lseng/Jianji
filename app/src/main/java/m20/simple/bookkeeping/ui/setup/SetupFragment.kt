@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import m20.simple.bookkeeping.R
 import m20.simple.bookkeeping.activities.FavoriteBillingActivity
+import m20.simple.bookkeeping.activities.ScheduledPlanActivity
 import m20.simple.bookkeeping.activities.WalletManageActivity
 import m20.simple.bookkeeping.databinding.FragmentSetupBinding
 import m20.simple.bookkeeping.utils.UIUtils
@@ -57,7 +58,7 @@ class SetupFragment : Fragment() {
                 }
                 1 -> {
                     // Scheduled plan
-                    Toast.makeText(requireContext(), "Scheduled plan clicked", Toast.LENGTH_SHORT).show()
+                    startActivity(Intent(requireActivity(), ScheduledPlanActivity::class.java))
                 }
                 2 -> {
                     // Collect View
@@ -81,7 +82,7 @@ class SetupFragment : Fragment() {
                 getString(R.string.collect_billing_summary)),
         )
 
-        val listAdapter = SetupListAdapter(dataset)
+        val listAdapter = SetupListAdapter(dataset, requireActivity())
         listAdapter.onItemClick = { position ->
             taskClick(position)
         }

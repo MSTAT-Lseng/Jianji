@@ -61,18 +61,12 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
 
     implementation("com.google.android.material:material:1.13.0-alpha12")
-    // The view calendar library for Android
     implementation("com.kizitonwose.calendar:view:2.6.2")
-
-    // The compose calendar library for Android
     implementation("com.kizitonwose.calendar:compose:2.6.2")
-
     implementation("com.google.android.flexbox:flexbox:3.0.0")
-
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4")
-
     implementation("io.github.panpf.zoomimage:zoomimage-view-sketch4:1.1.2")
-
     implementation("androidx.viewpager2:viewpager2:1.0.0")
+    implementation("com.alibaba.fastjson2:fastjson2-kotlin:2.0.57")
 
 }

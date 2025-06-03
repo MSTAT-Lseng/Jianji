@@ -153,4 +153,8 @@
     <string name="favorite_billing_delete_failed">部分账单取消收藏失败</string>
     <string name="loading_more">加载更多</string>
     <string name="no_more">没有更多了</string>
+    <string name="scheduled_plan_title">添加固定周期记账</string>
+    <string name="scheduled_plan_details_summary">每月发薪日、房租日、每周支出日自动添加账单</string>
+    <string name="no_items">暂无条目</string>
+    <string name="add">添加</string>
 </resources>

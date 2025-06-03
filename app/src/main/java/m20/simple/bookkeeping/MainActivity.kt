@@ -1,5 +1,7 @@
 package m20.simple.bookkeeping
 
+import android.content.Intent
+import android.content.IntentFilter
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -25,7 +27,8 @@ import m20.simple.bookkeeping.databinding.ActivityMainBinding
 import m20.simple.bookkeeping.ui.home.HomeViewModel
 import m20.simple.bookkeeping.utils.PackageUtils
 import m20.simple.bookkeeping.utils.UIUtils
-
+import m20.simple.bookkeeping.worker.SchedPlanReceiver
+import m20.simple.bookkeeping.worker.SchedPlanWorker
 
 class MainActivity : AppCompatActivity() {
 
@@ -33,6 +36,9 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var binding: ActivityMainBinding
+
+    private lateinit var schedPlanReceiver: SchedPlanReceiver
+    private lateinit var schedPlanWorker: SchedPlanWorker
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -61,6 +67,15 @@ class MainActivity : AppCompatActivity() {
         configTopBar()
         sendToolbarMessage()
         configNavigationHeader()
+
+        schedPlanWorker = SchedPlanWorker(this)
+        schedPlanReceiver = SchedPlanReceiver(schedPlanWorker)
+        val filter = IntentFilter().apply {
+            addAction(Intent.ACTION_DATE_CHANGED)
+        }
+        registerReceiver(schedPlanReceiver, filter)
+
+        viewModel.setSchedPlanWorker(schedPlanWorker)
 
     }
 
@@ -111,6 +126,11 @@ class MainActivity : AppCompatActivity() {
 
     private fun sendToolbarMessage() {
         viewModel.toolbarMessage.value = true
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        unregisterReceiver(schedPlanReceiver)
     }
 
 }

@@ -1,12 +1,15 @@
 package m20.simple.bookkeeping.ui.setup
 
+import android.app.Activity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import m20.simple.bookkeeping.R
+import m20.simple.bookkeeping.utils.UIUtils
 
 data class SetupListItem(
     val iconResId: Int,
@@ -14,7 +17,10 @@ data class SetupListItem(
     val subtitle: String
 )
 
-class SetupListAdapter(private val dataSet: List<SetupListItem>) :
+class SetupListAdapter(
+    private val dataSet: List<SetupListItem>,
+    private val activity: Activity
+) :
     RecyclerView.Adapter<SetupListAdapter.ViewHolder>() {
 
     var onItemClick: ((Int) -> Unit)? = null
@@ -23,6 +29,7 @@ class SetupListAdapter(private val dataSet: List<SetupListItem>) :
         val icon = view.findViewById<ImageView>(R.id.icon)
         val title = view.findViewById<TextView>(R.id.title)
         val subtitle = view.findViewById<TextView>(R.id.subtitle)
+        val rootLayout = view.findViewById<LinearLayout>(R.id.root_layout)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -39,6 +46,20 @@ class SetupListAdapter(private val dataSet: List<SetupListItem>) :
 
         holder.itemView.setOnClickListener {
             onItemClick?.invoke(position)
+        }
+
+        // navBarHeight
+        if (position == dataSet.size - 1) {
+            UIUtils.getNavigationBarHeight(
+                holder.rootLayout,
+                activity,
+                fun (navHeight) {
+                    val params = holder.rootLayout.layoutParams as RecyclerView.LayoutParams
+                    params.bottomMargin += navHeight
+                    holder.rootLayout.layoutParams = params
+                    holder.rootLayout.requestLayout()
+                }
+            )
         }
     }
 

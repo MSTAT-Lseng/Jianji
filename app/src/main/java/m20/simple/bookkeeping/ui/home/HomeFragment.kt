@@ -97,7 +97,16 @@ class HomeFragment : Fragment() {
         viewModel.toolbarMessage.observe(viewLifecycleOwner) { message ->
             isToolbarLoaded = message
             configToolbarSubtitle(YearMonth.now().format(DateTimeFormatter.ofPattern("yyyy/MM")))
+
+            val schedPlanWorker = viewModel.getSchedPlanWorker()
+            if (schedPlanWorker != null) {
+                if (schedPlanWorker.isFinishedUpdated()) baseConfig(view) else
+                    schedPlanWorker.start(fun() { baseConfig(view) })
+            } else baseConfig(view)
         }
+    }
+
+    private fun baseConfig(view: View) {
         configCalendarViewCreated(view)
         loadBillingItems()
         configCustomLinearSwipe()
@@ -106,8 +115,9 @@ class HomeFragment : Fragment() {
 
     private fun initNavBottomHeight(view: View) {
         val customLinear = view.findViewById<CustomLinearLayout>(R.id.billing_item_container)
-        UIUtils.getNavigationBarHeight(customLinear, requireActivity(),
-            fun (height) {
+        UIUtils.getNavigationBarHeight(
+            customLinear, requireActivity(),
+            fun(height) {
                 plusCustomLinearPaddingBottom(customLinear, height)
                 plusFabMarginBottom(height)
             }
@@ -495,6 +505,7 @@ class HomeFragment : Fragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        viewModel.getSchedPlanWorker()?.stop()
     }
 }
 

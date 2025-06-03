@@ -152,4 +152,8 @@
     <string name="favorite_billing_delete_failed">Failed to cancel collection of some bills</string>
     <string name="loading_more">Load More</string>
     <string name="no_more">No more</string>
+    <string name="scheduled_plan_title">Add fixed period accounting</string>
+    <string name="scheduled_plan_details_summary">Automatically add bills on monthly payday, rent day, and weekly expense day.</string>
+    <string name="no_items">No entries yet</string>
+    <string name="add">Add</string>
 </resources>
