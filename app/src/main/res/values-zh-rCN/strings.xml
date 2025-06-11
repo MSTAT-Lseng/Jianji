@@ -157,4 +157,8 @@
     <string name="scheduled_plan_details_summary">每月发薪日、房租日、每周支出日自动添加账单</string>
     <string name="no_items">暂无条目</string>
     <string name="add">添加</string>
+    <string name="add_scheduled_plan">添加定时计划</string>
+    <string name="week_scheduled">周计划</string>
+    <string name="month_scheduled">月计划</string>
+    <string name="daily_income_expense_statistics">当日支出 %s，收入 %s</string>
 </resources>

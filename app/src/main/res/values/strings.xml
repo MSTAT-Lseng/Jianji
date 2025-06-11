@@ -156,4 +156,8 @@
     <string name="scheduled_plan_details_summary">Automatically add bills on monthly payday, rent day, and weekly expense day.</string>
     <string name="no_items">No entries yet</string>
     <string name="add">Add</string>
+    <string name="add_scheduled_plan">Add a scheduled plan</string>
+    <string name="week_scheduled">Weekly Plan</string>
+    <string name="month_scheduled">Monthly Plan</string>
+    <string name="daily_income_expense_statistics">Expenditure for the day: %s, income: %s</string>
 </resources>

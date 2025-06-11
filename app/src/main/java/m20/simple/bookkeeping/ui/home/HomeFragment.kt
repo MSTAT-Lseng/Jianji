@@ -325,6 +325,20 @@ class HomeFragment : Fragment() {
         }
         addProgressIndicator()
 
+        fun addDailyIncomeExpenseStatistics(
+            income: Long,
+            expense: Long
+        ) {
+            val layout = layoutInflater.inflate(R.layout.daily_income_expense_statistics, null)
+            val textView = layout.findViewById<TextView>(R.id.text)
+            textView.text = getString(
+                R.string.daily_income_expense_statistics,
+                WalletCreator.convertAmountFormat(expense.toString()),
+                WalletCreator.convertAmountFormat(income.toString())
+            )
+            binding.billingItemContainer.addView(layout)
+        }
+
         lifecycleScope.launch {
             val records = withContext(Dispatchers.IO) {
                 BillingCreator.getRecordsByDay(loadBillingDay, requireActivity())
@@ -334,12 +348,20 @@ class HomeFragment : Fragment() {
             }
             resetBillingItemContainer()
             createFadeTransition()
+
+            var day_income = 0L
+            var day_expense = 0L
             records.forEach { record ->
                 addRecord(record, allWallets)
+                when (record.iotype) {
+                    0 -> day_expense += record.amount
+                    1 -> day_income += record.amount
+                }
             }
             if (records.isEmpty()) {
                 addBillingEmptyView()
             } else {
+                addDailyIncomeExpenseStatistics(day_income, day_expense)
                 addRecord(BillingCreator.getNullRecord(), allWallets, true)
             }
         }

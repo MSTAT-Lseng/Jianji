@@ -8,10 +8,13 @@ import android.widget.Button
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.viewpager.widget.ViewPager
+import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import m20.simple.bookkeeping.R
+import m20.simple.bookkeeping.activities.schedplan.SchedPlanPagerAdapter
 import m20.simple.bookkeeping.api.sched_plan.SchedPlanCreator
 import m20.simple.bookkeeping.utils.UIUtils
 
@@ -28,18 +31,30 @@ class ScheduledPlanActivity : AppCompatActivity() {
 
         activityMode = intent.getStringExtra("mode") ?: activityMode
 
-        when (activityMode) {
-            "view" -> setContentView(R.layout.activity_scheduled_plan)
-        }
+        setContentView(when (activityMode) {
+            "create" -> R.layout.activity_scheduled_plan_create
+            else -> R.layout.activity_scheduled_plan
+        })
         setSupportActionBar(findViewById(R.id.toolbar))
 
         val uiUtils = UIUtils
         uiUtils.fillStatusBarHeight(this, findViewById(R.id.status_bar_view))
         uiUtils.setStatusBarTextColor(this, !uiUtils.isDarkMode(resources))
-        uiUtils.commonNavBarHeight(findViewById(R.id.nav_bar_height), this)
 
-        findViewById<Button>(R.id.add_item_button).setOnClickListener { toAddSchedPlanActivity() }
-        loadItems()
+        when(activityMode) {
+            "view" -> {
+                uiUtils.commonNavBarHeight(findViewById(R.id.nav_bar_height), this)
+                findViewById<Button>(R.id.add_item_button).setOnClickListener { toAddSchedPlanActivity() }
+                loadItems()
+            }
+            "create" -> {
+                val viewPager = findViewById<ViewPager>(R.id.view_pager)
+                viewPager.adapter = SchedPlanPagerAdapter(supportFragmentManager, this)
+
+                val tabLayout = findViewById<TabLayout>(R.id.tab_layout)
+                tabLayout.setupWithViewPager(viewPager)
+            }
+        }
     }
 
     private fun loadItems() {
