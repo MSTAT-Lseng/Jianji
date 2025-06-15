@@ -43,6 +43,8 @@ import m20.simple.bookkeeping.utils.FileUtils
 import m20.simple.bookkeeping.utils.PremissionUtils
 import m20.simple.bookkeeping.utils.TimeUtils
 import m20.simple.bookkeeping.utils.UIUtils
+import m20.simple.bookkeeping.widget.ClassifyPickerWidget
+import m20.simple.bookkeeping.widget.WalletSelectionWidget
 import java.io.File
 import java.math.RoundingMode
 import java.text.SimpleDateFormat
@@ -120,10 +122,10 @@ class CreateBillingActivity : AppCompatActivity() {
             configAmountEditText()
 
             configDatePicker()
-            configWalletSelector()
+            loadWalletSelector()
             configPhotoSelector()
             configNoteEditText()
-            configClassifyPicker()
+            loadClassifyPicker()
             configDepositCheckBox()
             configIncomeCheckBox()
 
@@ -389,41 +391,24 @@ class CreateBillingActivity : AppCompatActivity() {
             }
         }
 
-    private fun configClassifyPicker() {
-        val container = findViewById<MaterialButtonToggleGroup>(R.id.classify_linear)
-        val classifyList = resources.getStringArray(R.array.classify_list)
-        val ids = resources.getStringArray(R.array.classify_list_id)
-        val icons = resources.obtainTypedArray(R.array.classify_icon_list)
-
-        val iconList = List(icons.length()) { i -> icons.getResourceId(i, -1) }
-            .filter { it != -1 }
-        icons.recycle()
-
-        classifyList.withIndex().forEach { (i, classifyName) ->
-            val classifyIcon = iconList.getOrNull(i) ?: return@forEach
-            val classifyId = ids.getOrNull(i) ?: return@forEach
-
-            val classifyButton = layoutInflater.inflate(
-                R.layout.create_billing_classify_button,
-                container,
-                false
-            ) as MaterialButton
-
-            classifyButton.apply {
-                text = classifyName
-                setIconResource(classifyIcon)
-                setOnClickListener {
-                    billingObject.classify = classifyId
+    private fun loadClassifyPicker() {
+        val rootView = findViewById<LinearLayout>(R.id.classify_layout)
+        val classifyView = ClassifyPickerWidget.getWidget(
+            rootView,
+            layoutInflater,
+            resources,
+            { classify ->
+                billingObject.classify = classify
+            },
+            { ids, container ->
+                if (isEditBilling == true) {
+                    val classifyId = billingObject.classify
+                    val index = ids.indexOf(classifyId)
+                    container.check(container.getChildAt(index).id)
                 }
             }
-            container.addView(classifyButton)
-        }
-        if (isEditBilling == true) {
-            val classifyId = billingObject.classify
-            val index = ids.indexOf(classifyId)
-            container.check(container.getChildAt(index).id)
-        }
-
+        )
+        rootView.addView(classifyView)
     }
 
     private fun configPhotoSelector() {
@@ -518,38 +503,28 @@ class CreateBillingActivity : AppCompatActivity() {
         text.text = getString(textRes, size.takeIf { it > 0 })
     }
 
-    private fun configWalletSelector() {
-        val walletInputText: MaterialAutoCompleteTextView = findViewById(R.id.wallet_input_text)
-
-        fun checkEdit(defaultWalletID: Int) {
-            if (!isEditBilling!!) {
-                billingObject.wallet = defaultWalletID
-                walletInputText.hint = getString(R.string.choose_wallet)
-                return
-            }
-            walletInputText.hint = getString(R.string.wallet_selector_default)
-        }
-
-        fun updateUi(allWallets: List<Pair<Int, String>>, defaultWalletID: Int) {
-            val wallets = allWallets.map { it.second }.toTypedArray()
-            val walletIds = allWallets.map { it.first }.toTypedArray()
-            walletInputText.setSimpleItems(wallets)
-
-            walletInputText.setOnItemClickListener { parent, view, position, id ->
-                val selectedItem: Int = walletIds[position]
-                billingObject.wallet = selectedItem
-            }
-
-            checkEdit(defaultWalletID)
-        }
-
-        walletExecutorService.execute {
-            WalletCreator.getDefaultWallet(this, resources)
-                .let { (defaultWalletID, _) ->
-                    val allWallets = WalletCreator.getAllWallets(this)
-                    runOnUiThread { updateUi(allWallets, defaultWalletID) }
+    private fun loadWalletSelector() {
+        val rootView = findViewById<LinearLayout>(R.id.wallet_layout)
+        val walletView = WalletSelectionWidget.getWidget(
+            rootView,
+            layoutInflater,
+            resources,
+            { defaultWalletID, walletInputText ->
+                if (!isEditBilling!!) {
+                    billingObject.wallet = defaultWalletID
+                    walletInputText.hint = getString(R.string.choose_wallet)
+                } else {
+                    walletInputText.hint = getString(R.string.wallet_selector_default)
                 }
-        }
+            },
+            { walletIdPosition ->
+                val selectedItem: Int = walletIdPosition
+                billingObject.wallet = selectedItem
+            },
+            this,
+            walletExecutorService
+        )
+        rootView.addView(walletView)
     }
 
     private fun configDatePicker() {

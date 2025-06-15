@@ -93,25 +93,15 @@
                     app:layout_constraintEnd_toStartOf="@id/cb_income"
                     app:layout_constraintTop_toBottomOf="@id/et_input" />
 
-                <HorizontalScrollView
+                <LinearLayout
                     android:id="@+id/classify_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:scrollbars="none"
+                    android:orientation="vertical"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/cb_deposit">
-
-                    <com.google.android.material.button.MaterialButtonToggleGroup
-                        android:id="@+id/classify_linear"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        app:selectionRequired="true"
-                        app:singleSelection="true" />
-
-                </HorizontalScrollView>
+                    app:layout_constraintTop_toBottomOf="@id/cb_deposit" />
 
                 <LinearLayout
                     android:id="@+id/add_notes_layout"
@@ -201,34 +191,10 @@
                     android:id="@+id/wallet_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
                     android:orientation="horizontal"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/add_photos_btn_divider">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginEnd="12dp"
-                        android:importantForAccessibility="no"
-                        android:src="@drawable/account_balance_wallet" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/wallet_input"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
-
-                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
-                            android:id="@+id/wallet_input_text"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="none" />
-
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                </LinearLayout>
+                    app:layout_constraintTop_toBottomOf="@id/add_photos_btn_divider" />
 
                 <LinearLayout
                     android:id="@+id/date_picker_layout"

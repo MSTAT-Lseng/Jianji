@@ -160,4 +160,13 @@
     <string name="week_scheduled">Weekly Plan</string>
     <string name="month_scheduled">Monthly Plan</string>
     <string name="daily_income_expense_statistics">Expenditure for the day: %s, income: %s</string>
+    <string name="select_week">Selection Week</string>
+    <string name="monday">Monday</string>
+    <string name="tuesday">Tuesday</string>
+    <string name="wednesday">Wednesday</string>
+    <string name="thursday">Thursday</string>
+    <string name="friday">Friday</string>
+    <string name="saturday">Saturday</string>
+    <string name="sunday">Sunday</string>
+    <string name="cycle_day">Cycle Day:</string>
 </resources>

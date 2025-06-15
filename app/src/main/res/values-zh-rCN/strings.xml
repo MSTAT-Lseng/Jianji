@@ -161,4 +161,13 @@
     <string name="week_scheduled">周计划</string>
     <string name="month_scheduled">月计划</string>
     <string name="daily_income_expense_statistics">当日支出 %s，收入 %s</string>
+    <string name="select_week">选择周</string>
+    <string name="monday">周一</string>
+    <string name="tuesday">周二</string>
+    <string name="wednesday">周三</string>
+    <string name="thursday">周四</string>
+    <string name="friday">周五</string>
+    <string name="saturday">周六</string>
+    <string name="sunday">周日</string>
+    <string name="cycle_day">循环日：</string>
 </resources>
