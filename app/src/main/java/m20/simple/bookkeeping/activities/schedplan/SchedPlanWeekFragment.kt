@@ -19,9 +19,32 @@ class SchedPlanWeekFragment : SchedPlanFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val scheduleDateTitleView = getScheduleDateTitleView()
+        configSubmit()
 
         if (scheduleDateTitleView != null) {
             loadWeekDateTitleView(scheduleDateTitleView)
+        }
+    }
+
+    private fun configSubmit() {
+        fun checkBillingObject(): Boolean {
+            return billingObject.amount != 0L
+        }
+
+        fun checkCycle(): Boolean {
+            return selectedWeek != -1
+        }
+
+        val saveButton = getSaveButton()
+        saveButton?.setOnClickListener {
+            if (!checkBillingObject()) {
+                Toast.makeText(requireContext(), getString(R.string.require_amount), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            if (!checkCycle()) {
+                Toast.makeText(requireContext(), getString(R.string.require_cycle), Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
         }
     }
 
@@ -42,9 +65,7 @@ class SchedPlanWeekFragment : SchedPlanFragment() {
         autoCompleteTextView?.setSimpleItems(items)
         autoCompleteTextView?.setOnItemClickListener { parent, _, position, id ->
             val selectedItem = parent.getItemAtPosition(position).toString()
-            Toast.makeText(requireContext(), "你选择了: $selectedItem，position：$position", Toast.LENGTH_SHORT).show()
 
-            // 或者执行其他逻辑，比如更新 UI，保存数据等
             selectedWeek = position
         }
 

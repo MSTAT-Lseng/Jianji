@@ -169,4 +169,7 @@
     <string name="saturday">Saturday</string>
     <string name="sunday">Sunday</string>
     <string name="cycle_day">Cycle Day:</string>
+    <string name="save_sched_plan">Save the scheduled plan</string>
+    <string name="require_amount">Please fill in the amount</string>
+    <string name="require_cycle">Please select a recurring date</string>
 </resources>

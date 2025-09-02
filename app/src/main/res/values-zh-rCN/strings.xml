@@ -170,4 +170,7 @@
     <string name="saturday">周六</string>
     <string name="sunday">周日</string>
     <string name="cycle_day">循环日：</string>
+    <string name="save_sched_plan">保存定时计划</string>
+    <string name="require_amount">请填写金额</string>
+    <string name="require_cycle">请选择循环日期</string>
 </resources>

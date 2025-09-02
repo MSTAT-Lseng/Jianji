@@ -4,9 +4,17 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.CheckBox
 import android.widget.LinearLayout
+import android.widget.Toast
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
+import com.google.android.material.textfield.TextInputEditText
 import m20.simple.bookkeeping.R
+import m20.simple.bookkeeping.api.objects.BillingObject
+import m20.simple.bookkeeping.api.wallet.WalletCreator
+import m20.simple.bookkeeping.utils.UIUtils
 import m20.simple.bookkeeping.widget.ClassifyPickerWidget
 import m20.simple.bookkeeping.widget.WalletSelectionWidget
 import java.util.concurrent.Executors
@@ -14,6 +22,17 @@ import java.util.concurrent.Executors
 open class SchedPlanFragment : Fragment() {
 
     private val walletExecutorService = Executors.newSingleThreadExecutor()
+    val billingObject = BillingObject(
+        time = 0,
+        amount = 0,
+        iotype = 0,
+        classify = "others",
+        notes = null,
+        images = null,
+        deposit = "false",
+        wallet = 1,
+        tags = null
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -26,6 +45,7 @@ open class SchedPlanFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        UIUtils.commonNavBarHeight(view, requireActivity())
 
         fun loadClassifyPicker() {
             val rootView = view.findViewById<LinearLayout>(R.id.classify_layout)
@@ -34,15 +54,9 @@ open class SchedPlanFragment : Fragment() {
                 layoutInflater,
                 resources,
                 { classify ->
-                    //billingObject.classify = classify
+                    billingObject.classify = classify
                 },
-                { ids, container ->
-                    /*if (isEditBilling == true) {
-                        val classifyId = billingObject.classify
-                        val index = ids.indexOf(classifyId)
-                        container.check(container.getChildAt(index).id)
-                    }*/
-                }
+                { _, _ -> }
             )
             rootView.addView(classifyView)
         }
@@ -53,17 +67,11 @@ open class SchedPlanFragment : Fragment() {
                 rootView,
                 layoutInflater,
                 resources,
-                { defaultWalletID, walletInputText ->
-                    //if (!isEditBilling!!) {
-                        //billingObject.wallet = defaultWalletID
-                        walletInputText.hint = getString(R.string.choose_wallet)
-                    //} else {
-                        //walletInputText.hint = getString(R.string.wallet_selector_default)
-                    //}
+                { _, walletInputText ->
+                    walletInputText.hint = getString(R.string.choose_wallet)
                 },
                 { walletIdPosition ->
-                    //val selectedItem: Int = walletIdPosition
-                    //billingObject.wallet = selectedItem
+                    billingObject.wallet = walletIdPosition
                 },
                 requireActivity(),
                 walletExecutorService
@@ -73,10 +81,60 @@ open class SchedPlanFragment : Fragment() {
 
         loadClassifyPicker()
         loadWalletSelector()
+
+        configAmountEditText()
+        configIncomeCheckBox()
+        configNoteEditText()
+    }
+
+    fun getAmountEditText(): TextInputEditText? {
+        return view?.findViewById(R.id.et_input_text)
+    }
+
+    fun getIncomeCheckBox(): CheckBox? {
+        return view?.findViewById(R.id.cb_income)
+    }
+
+    fun getNoteEditText(): TextInputEditText? {
+        return view?.findViewById(R.id.notes_input_text)
+    }
+
+    private fun configAmountEditText() {
+        val amountEditText = getAmountEditText()
+
+        fun taskAmount(amount: String) {
+            billingObject.amount = WalletCreator.convertNumberToAmount(amount) ?: 0L
+        }
+
+        amountEditText?.doAfterTextChanged { editable ->
+            val amount = editable?.toString().orEmpty()
+            if (amount.isNotBlank()) {
+                taskAmount(amount)
+            } else {
+                billingObject.amount = 0
+            }
+        }
+    }
+
+    private fun configIncomeCheckBox() {
+        getIncomeCheckBox()?.setOnCheckedChangeListener { _, isChecked ->
+            billingObject.iotype = if (isChecked) 1 else 0
+        }
+    }
+
+    private fun configNoteEditText() {
+        val editText = getNoteEditText()
+        editText?.doAfterTextChanged { editable ->
+            billingObject.notes = editable.toString().takeIf { it.isNotEmpty() }
+        }
     }
 
     fun getScheduleDateTitleView(): LinearLayout? {
         return view?.findViewById(R.id.schedule_date_title_view)
+    }
+
+    fun getSaveButton(): Button? {
+        return view?.findViewById(R.id.save_sched_plan_btn)
     }
 
     override fun onDestroy() {
